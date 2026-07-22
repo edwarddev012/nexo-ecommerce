@@ -31,3 +31,9 @@ Plataforma de comercio electrónico minimalista desarrollada para ofrecer una ex
 
 * **Arquitectura Limpia:** Flujo de datos centralizado para evitar re-renderizados innecesarios en la grilla de productos.
 * **Fallback Inteligente:** Manejo de imágenes de carga y estados de error con placeholders de marca.
+
+## 💻 Ejecución Local
+
+1. Clona el repositorio:
+   ```bash
+git clone [https://github.com/edwarddev012/nexo-ecommerce.git]
