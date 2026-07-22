@@ -35,5 +35,5 @@ Plataforma de comercio electrónico minimalista desarrollada para ofrecer una ex
 ## 💻 Ejecución Local
 
 1. Clona el repositorio:
-   ```bash
+```bash
 git clone [https://github.com/edwarddev012/nexo-ecommerce.git](https://github.com/edwarddev012/nexo-ecommerce.git)
