@@ -2,7 +2,7 @@
 
 Plataforma de comercio electrónico minimalista desarrollada para ofrecer una experiencia de compra fluida, rápida e interactiva. Diseñada bajo una estética urbana/industrial con optimización de rendimiento en el lado del cliente.
 
-🚀 **[Ver Demo en Vivo](https://TU-LINK-DE-VERCEL.vercel.app)**
+🚀 **[Ver Demo en Vivo]https://nexo-ecommerce-mu.vercel.app/**
 
 ---
 
@@ -31,11 +31,3 @@ Plataforma de comercio electrónico minimalista desarrollada para ofrecer una ex
 
 * **Arquitectura Limpia:** Flujo de datos centralizado para evitar re-renderizados innecesarios en la grilla de productos.
 * **Fallback Inteligente:** Manejo de imágenes de carga y estados de error con placeholders de marca.
-
----
-
-## 💻 Ejecución Local
-
-1. Clona el repositorio:
-   ```bash
-   git clone [https://github.com/TU-USUARIO/nexo-ecommerce.git](https://github.com/TU-USUARIO/nexo-ecommerce.git)
