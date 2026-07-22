@@ -1,16 +1,41 @@
-# React + Vite
+# ⚡ NEXO — E-Commerce Tech & Lifestyle
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Plataforma de comercio electrónico minimalista desarrollada para ofrecer una experiencia de compra fluida, rápida e interactiva. Diseñada bajo una estética urbana/industrial con optimización de rendimiento en el lado del cliente.
 
-Currently, two official plugins are available:
+🚀 **[Ver Demo en Vivo](https://TU-LINK-DE-VERCEL.vercel.app)**
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## 🛠️ Stack Tecnológico
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+* **Core:** React / Next.js
+* **Animaciones & Micro-interacciones:** Framer Motion
+* **Almacenamiento de Media:** Supabase Storage
+* **Iconografía:** Lucide Icons
+* **Estilos:** CSS3 / Módulos responsivos
+* **Persistencia:** LocalStorage (Carrito y Wishlist)
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## ✨ Características Principales
+
+* **Filtros Dinámicos en Tiempo Real:** Búsqueda instantánea, filtrado por categorías y rango de precios optimizados mediante memorización (`useMemo`).
+* **Paginación Fluida:** Navegación por páginas controlada para evitar la sobrecarga visual de catálogo.
+* **Vista Rápida de Producto (QuickView Modal):** Modal interactivo con físicas de resorte (*spring physics*) para ver especificaciones y opiniones.
+* **Carrito y Lista de Deseos (Wishlist):** Paneles laterales desglosables (*drawers*) con persistencia local de datos.
+* **UX/UI Responsiva:** Adaptación completa a dispositivos móviles con menú hamburguesa dedicado.
+
+---
+
+## ⚡ Optimización & Rendimiento
+
+* **Arquitectura Limpia:** Flujo de datos centralizado para evitar re-renderizados innecesarios en la grilla de productos.
+* **Fallback Inteligente:** Manejo de imágenes de carga y estados de error con placeholders de marca.
+
+---
+
+## 💻 Ejecución Local
+
+1. Clona el repositorio:
+   ```bash
+   git clone [https://github.com/TU-USUARIO/nexo-ecommerce.git](https://github.com/TU-USUARIO/nexo-ecommerce.git)
