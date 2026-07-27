@@ -28,7 +28,7 @@ export default function Header({
 }) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false); // 📱 Estado para el menú móvil
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const [isShaking, setIsShaking] = useState(false);
   const prevCartCount = useRef(cartCount);
@@ -82,13 +82,13 @@ export default function Header({
     onProductClick(product);
     setSearchTerm("");
     setShowSuggestions(false);
-    setIsMenuOpen(false); // Cierra el menú al seleccionar un producto
+    setIsMenuOpen(false);
   };
 
   const handleScrollToSection = (e, selector) => {
     e.preventDefault();
     setSearchTerm("");
-    setIsMenuOpen(false); // Cierra el menú móvil al hacer clic
+    setIsMenuOpen(false);
     const target = document.querySelector(selector);
     if (target) {
       target.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -98,7 +98,7 @@ export default function Header({
   return (
     <header className="site-header">
       <div className="container header-container">
-        {/* 📱 Botón Hamburguesa (Solo visible en móviles) */}
+        {/* 📱 Botón Hamburguesa */}
         <button
           className="btn-icon mobile-menu-toggle"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -122,7 +122,7 @@ export default function Header({
           </a>
         </div>
 
-        {/* Links & Search Container (Sufre la transformación responsiva) */}
+        {/* Links & Search Container */}
         <div className={`header-nav-wrapper ${isMenuOpen ? "is-open" : ""}`}>
           <nav className="header-nav">
             <a
@@ -209,6 +209,8 @@ export default function Header({
                                 <img
                                   src={product.image}
                                   alt={product.name}
+                                  loading="lazy"
+                                  decoding="async"
                                   className="suggestion-image"
                                 />
                               </div>
@@ -241,7 +243,7 @@ export default function Header({
           </div>
         </div>
 
-        {/* Actions (Siempre visibles a la derecha) */}
+        {/* Actions */}
         <div className="header-actions">
           {/* Wishlist */}
           <button
@@ -278,18 +280,50 @@ export default function Header({
           </button>
 
           {/* User Profile */}
-          <div className="profile-menu-container">
+          <div
+            className="profile-menu-container"
+            style={{ position: "relative" }}
+          >
             <button
               className="btn-icon header-btn"
               onClick={() => setIsProfileOpen(!isProfileOpen)}
               aria-label="User Account Menu"
+              style={{
+                overflow: "hidden",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
             >
-              {user && user.name ? (
-                <div className="user-avatar-initials">
-                  {user.name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")}
+              {user && user.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={user.name}
+                  referrerPolicy="no-referrer" // 👈 Agrega esto para permitir fotos de Google
+                  style={{
+                    width: "28px",
+                    height: "28px",
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                  }}
+                />
+              ) : user && user.name ? (
+                <div
+                  style={{
+                    width: "28px",
+                    height: "28px",
+                    borderRadius: "50%",
+                    backgroundColor: "#111",
+                    color: "#fff",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "0.75rem",
+                    fontWeight: "700",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  {user.name.charAt(0)}
                 </div>
               ) : (
                 <User size={20} />
@@ -321,20 +355,117 @@ export default function Header({
                     animate="visible"
                     exit="exit"
                     transition={springTransition}
-                    style={{ zIndex: 100 }}
+                    style={{
+                      position: "absolute",
+                      right: 0,
+                      top: "calc(100% + 8px)",
+                      backgroundColor: "#ffffff",
+                      borderRadius: "16px",
+                      padding: "16px",
+                      minWidth: "220px",
+                      boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
+                      zIndex: 100,
+                    }}
                   >
                     {user ? (
                       <>
-                        <div className="dropdown-header">
-                          <span className="dropdown-name">{user.name}</span>
-                          <span className="dropdown-email">{user.email}</span>
+                        {/* Cabecera de usuario con avatar / iniciales */}
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "12px",
+                            paddingBottom: "12px",
+                          }}
+                        >
+                          {user.avatar ? (
+                            <img
+                              src={user.avatar}
+                              alt={user.name}
+                              referrerPolicy="no-referrer" // 👈 Agrega esto para permitir fotos de Google
+                              style={{
+                                width: "36px",
+                                height: "36px",
+                                borderRadius: "50%",
+                                objectFit: "cover",
+                              }}
+                            />
+                          ) : (
+                            <div
+                              style={{
+                                width: "36px",
+                                height: "36px",
+                                borderRadius: "50%",
+                                backgroundColor: "#111",
+                                color: "#fff",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontSize: "1rem",
+                                fontWeight: "700",
+                                textTransform: "uppercase",
+                                flexShrink: 0,
+                              }}
+                            >
+                              {user.name ? user.name.charAt(0) : "U"}
+                            </div>
+                          )}
+                          <div
+                            style={{
+                              overflow: "hidden",
+                              display: "flex",
+                              flexDirection: "column",
+                            }}
+                          >
+                            <span
+                              style={{
+                                fontSize: "0.9rem",
+                                fontWeight: "700",
+                                color: "#111",
+                                lineHeight: "1.2",
+                              }}
+                            >
+                              {user.name}
+                            </span>
+                            <span
+                              style={{
+                                fontSize: "0.75rem",
+                                color: "#666",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {user.email}
+                            </span>
+                          </div>
                         </div>
-                        <div className="dropdown-divider" />
+
+                        <div
+                          style={{
+                            height: "1px",
+                            backgroundColor: "#e4e4e7",
+                            margin: "8px 0",
+                          }}
+                        />
+
                         <button
-                          className="dropdown-item btn-logout"
                           onClick={() => {
                             onLoginToggle();
                             setIsProfileOpen(false);
+                          }}
+                          style={{
+                            width: "100%",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
+                            padding: "8px 0",
+                            background: "transparent",
+                            border: "none",
+                            color: "#ef4444",
+                            fontWeight: "600",
+                            fontSize: "0.85rem",
+                            cursor: "pointer",
                           }}
                         >
                           <LogOut size={16} />
@@ -342,10 +473,13 @@ export default function Header({
                         </button>
                       </>
                     ) : (
-                      <div className="dropdown-login-prompt">
+                      <div
+                        className="dropdown-login-prompt"
+                        style={{ textAlign: "center" }}
+                      >
                         <p
                           style={{
-                            margin: "0 0 8px 0",
+                            margin: "0 0 12px 0",
                             color: "#64748b",
                             fontSize: "0.85rem",
                           }}
@@ -357,6 +491,16 @@ export default function Header({
                           onClick={() => {
                             onLoginToggle();
                             setIsProfileOpen(false);
+                          }}
+                          style={{
+                            width: "100%",
+                            padding: "8px 16px",
+                            borderRadius: "9999px",
+                            backgroundColor: "#111",
+                            color: "#fff",
+                            border: "none",
+                            fontWeight: "600",
+                            cursor: "pointer",
                           }}
                         >
                           Iniciar Sesión

@@ -3059,3 +3059,21 @@ h2 {
   transform: scaleX(1);
   transform-origin: bottom left;
 }
+
+@media (max-width: 768px) {
+  .modal-body-grid {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .modal-product-image {
+    max-height: 240px;
+    object-fit: cover;
+    width: 100%;
+    border-radius: 16px;
+  }
+
+  .modal-info-section {
+    padding: 16px 0;
+  }
+}

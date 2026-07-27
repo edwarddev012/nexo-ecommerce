@@ -75,12 +75,14 @@ export default function ProductModal({
             left: 0,
             width: "100%",
             height: "100%",
-            backgroundColor: "rgba(0, 0, 0, 0.3)",
+            backgroundColor: "rgba(0, 0, 0, 0.4)",
             backdropFilter: "blur(6px)",
+            WebkitBackdropFilter: "blur(6px)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            padding: "24px",
+            padding: "16px", // Margen lateral general para dispositivos móviles
+            boxSizing: "border-box",
           }}
         >
           {/* Tarjeta de Producto Animada */}
@@ -93,13 +95,14 @@ export default function ProductModal({
             onClick={(e) => e.stopPropagation()}
             style={{
               backgroundColor: "#ffffff",
-              borderRadius: "20px",
-              width: "940px",
-              maxWidth: "100%",
-              maxHeight: "90vh",
+              borderRadius: "24px",
+              width: "100%",
+              maxWidth: "880px", // Limite limpio de ancho para escritorio
+              maxHeight: "85vh", // Control estricto de altura responsiva
               position: "relative",
-              boxShadow: "0 20px 50px rgba(0, 0, 0, 0.12)",
-              overflow: "hidden",
+              boxShadow: "0 20px 50px rgba(0, 0, 0, 0.15)",
+              overflowY: "auto", // Desplazamiento limpio si el contenido supera la pantalla
+              boxSizing: "border-box",
             }}
           >
             {/* Botón de cierre con micro-interacción de escala */}
@@ -111,8 +114,8 @@ export default function ProductModal({
               whileTap={{ scale: 0.9 }}
               style={{
                 position: "absolute",
-                top: 20,
-                right: 20,
+                top: 16,
+                right: 16,
                 background: "white",
                 border: "none",
                 width: "36px",
@@ -122,7 +125,7 @@ export default function ProductModal({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
                 zIndex: 10,
               }}
             >
@@ -135,7 +138,7 @@ export default function ProductModal({
                 <img src={image} alt={name} className="modal-product-image" />
               </div>
 
-              {/* Sección de Información Derecha (Desplazable de forma limpia) */}
+              {/* Sección de Información Derecha */}
               <div className="modal-info-section">
                 <div className="modal-category-wishlist">
                   <span className="modal-category-tag">{category}</span>

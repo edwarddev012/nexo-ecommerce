@@ -1,17 +1,21 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef, lazy, Suspense } from "react";
 import Header from "./components/Header";
 import Filters from "./components/Filters";
 import ProductGrid from "./components/ProductGrid";
-import ProductQuickView from "./components/ProductQuickView/ProductQuickView";
-import CartDrawer from "./components/CartDrawer";
-import WishlistDrawer from "./components/WishlistDrawer";
-import CheckoutModal from "./components/CheckoutModal";
-import Footer from "./components/Footer"; // 🚀 Importación del nuevo Footer Premium
+import Footer from "./components/Footer";
+const ProductQuickView = lazy(
+  () => import("./components/ProductQuickView/ProductQuickView"),
+);
+const CartDrawer = lazy(() => import("./components/CartDrawer"));
+const WishlistDrawer = lazy(() => import("./components/WishlistDrawer"));
+const CheckoutModal = lazy(() => import("./components/CheckoutModal"));
+const AuthModal = lazy(() => import("./components/AuthModal"));
 import products from "./data/products";
 import { motion, AnimatePresence } from "framer-motion";
 import { ToastNotification } from "./components/ToastNotification";
 import { ToastProvider } from "./context/ToastContext";
 import { SlidersHorizontal } from "lucide-react";
+import { supabase } from "./lib/supabaseClient";
 
 const TRADUCCIONES_CATEGORIAS = {
   All: "Todos",
@@ -34,11 +38,15 @@ export default function App() {
   const [sortOption, setSortOption] = useState("featured");
   const [priceRange, setPriceRange] = useState(350);
   const [cartTrigger, setCartTrigger] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // --- NUEVOS ESTADOS PARA PAGINACIÓN ---
+  // --- ESTADOS DE PAGINACIÓN ---
   const [currentPage, setCurrentPage] = useState(1);
-  const productsPerPage = 9; // Puedes cambiar este número para mostrar más o menos productos por página
+  const productsPerPage = 9;
+
+  // --- ESTADOS DE AUTENTICACIÓN Y MODALES ---
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [user, setUser] = useState(null);
 
   const [toast, setToast] = useState({
     isOpen: false,
@@ -47,40 +55,181 @@ export default function App() {
   });
 
   const [cart, setCart] = useState(() => {
-    const savedCart = localStorage.getItem("nexo_cart");
-    return savedCart ? JSON.parse(savedCart) : [];
+    try {
+      const savedCart = localStorage.getItem("nexo_cart");
+      return savedCart ? JSON.parse(savedCart) : [];
+    } catch {
+      return [];
+    }
   });
   const [selectedProduct, setSelectedProduct] = useState(null);
 
   const [wishlist, setWishlist] = useState(() => {
-    const savedWishlist = localStorage.getItem("nexo_wishlist");
-    return savedWishlist ? JSON.parse(savedWishlist) : [];
+    try {
+      const savedWishlist = localStorage.getItem("nexo_wishlist");
+      return savedWishlist ? JSON.parse(savedWishlist) : [];
+    } catch {
+      return [];
+    }
   });
 
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [showFilters, setShowFilters] = useState(true);
+  const isDataLoaded = useRef(false);
 
-  const [user, setUser] = useState({
-    name: "Edward Dev",
-    email: "email@ejemplo.com",
-  });
-
+  // --- 1. GESTIÓN DE AUTENTICACIÓN Y CARGA DE DATOS ---
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
+    const fetchUserData = async (userId) => {
+      try {
+        const { data, error } = await supabase
+          .from("user_data")
+          .select("cart, wishlist")
+          .eq("user_id", userId)
+          .maybeSingle();
+
+        if (!error && data) {
+          if (Array.isArray(data.cart)) setCart(data.cart);
+          if (Array.isArray(data.wishlist)) setWishlist(data.wishlist);
+        }
+      } catch (err) {
+        console.error("Error al obtener datos de usuario:", err);
+      } finally {
+        isDataLoaded.current = true;
+      }
+    };
+
+    const initAuth = async () => {
+      try {
+        // Consultamos la sesión actual guardada por Supabase
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        if (session?.user) {
+          const currentUser = session.user;
+          const avatarUrl =
+            currentUser.user_metadata?.avatar_url ||
+            currentUser.user_metadata?.picture ||
+            null;
+
+          setUser({
+            id: currentUser.id,
+            name:
+              currentUser.user_metadata?.full_name ||
+              currentUser.user_metadata?.name ||
+              currentUser.email.split("@")[0],
+            email: currentUser.email,
+            avatar: avatarUrl,
+          });
+
+          await fetchUserData(currentUser.id);
+        } else {
+          isDataLoaded.current = true;
+        }
+      } catch (e) {
+        console.error("Error al verificar autenticación:", e);
+        isDataLoaded.current = true;
+      }
+    };
+
+    initAuth();
+
+    // Escuchador de cambios de estado (Login, Logout, etc.)
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          const avatarUrl =
+            session.user.user_metadata?.avatar_url ||
+            session.user.user_metadata?.picture ||
+            null;
+
+          setUser({
+            id: session.user.id,
+            name:
+              session.user.user_metadata?.full_name ||
+              session.user.user_metadata?.name ||
+              session.user.email.split("@")[0],
+            email: session.user.email,
+            avatar: avatarUrl,
+          });
+
+          if (event === "SIGNED_IN") {
+            isDataLoaded.current = false;
+            await fetchUserData(session.user.id);
+          }
+        } else if (event === "SIGNED_OUT") {
+          setUser(null);
+          setCart([]);
+          setWishlist([]);
+          localStorage.removeItem("nexo_cart");
+          localStorage.removeItem("nexo_wishlist");
+          isDataLoaded.current = true;
+        }
+      },
+    );
+
+    return () => {
+      if (authListener?.subscription) {
+        authListener.subscription.unsubscribe();
+      }
+    };
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("nexo_cart", JSON.stringify(cart));
-  }, [cart]);
+    if (!isDataLoaded.current) return;
 
+    const timer = setTimeout(async () => {
+      if (!user?.id) {
+        localStorage.setItem("nexo_cart", JSON.stringify(cart));
+        return;
+      }
+
+      try {
+        await supabase.from("user_data").upsert(
+          {
+            user_id: user.id,
+            cart: cart,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id" },
+        );
+      } catch (err) {
+        console.error("Excepción al guardar carrito:", err);
+      }
+    }, 500); // 👈 Espera 500ms de inactividad antes de golpear la API
+
+    return () => clearTimeout(timer); // Cancela la petición anterior si el usuario interactúa rápido
+  }, [cart, user?.id]);
+
+  // --- 3. GUARDAR WISHLIST EN SUPABASE O LOCALSTORAGE ---
   useEffect(() => {
-    localStorage.setItem("nexo_wishlist", JSON.stringify(wishlist));
-  }, [wishlist]);
+    if (!isDataLoaded.current) return;
+
+    const saveWishlist = async () => {
+      if (!user?.id) {
+        localStorage.setItem("nexo_wishlist", JSON.stringify(wishlist));
+        return;
+      }
+
+      try {
+        const { error } = await supabase.from("user_data").upsert(
+          {
+            user_id: user.id,
+            wishlist: wishlist,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id" },
+        );
+        if (error) console.error("Error al guardar wishlist:", error.message);
+      } catch (err) {
+        console.error("Excepción al guardar wishlist:", err);
+      }
+    };
+
+    saveWishlist();
+  }, [wishlist, user?.id]);
 
   const showToast = (message, type = "success") => {
     setToast({ isOpen: true, message, type });
@@ -131,10 +280,11 @@ export default function App() {
       });
   }, [searchTerm, selectedCategory, sortOption, priceRange]);
 
-  // --- LÓGICA Y CÁLCULOS DE PAGINACIÓN ---
-  // Si los filtros cambian, volvemos automáticamente a la página 1
   useEffect(() => {
-    setCurrentPage(1);
+    const timer = setTimeout(() => {
+      setCurrentPage(1);
+    }, 0);
+    return () => clearTimeout(timer);
   }, [searchTerm, selectedCategory, sortOption, priceRange]);
 
   const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
@@ -202,11 +352,14 @@ export default function App() {
     setPriceRange(maxProductPrice);
   };
 
-  const handleLoginToggle = () => {
+  // --- LÓGICA DE BOTÓN DE SESIÓN (LOGIN / LOGOUT REAL) ---
+  const handleLoginToggle = async () => {
     if (user) {
+      await supabase.auth.signOut();
       setUser(null);
+      showToast("Sesión cerrada correctamente", "info");
     } else {
-      setUser({ name: "Edward Doe", email: "edward@example.com" });
+      setIsAuthOpen(true);
     }
   };
 
@@ -278,7 +431,9 @@ export default function App() {
               </div>
               <div>
                 <button
-                  className={`btn-toggle-filters ${showFilters ? "active" : ""}`}
+                  className={`btn-toggle-filters ${
+                    showFilters ? "active" : ""
+                  }`}
                   onClick={() => setShowFilters(!showFilters)}
                 >
                   <SlidersHorizontal size={14} />
@@ -310,7 +465,7 @@ export default function App() {
                     style={{ overflow: "hidden", flexShrink: 0 }}
                   >
                     <Filters
-                      selectedCategory={selectedCategory} // 👈 Pásalo directo e íntegro
+                      selectedCategory={selectedCategory}
                       setSelectedCategory={setSelectedCategory}
                       sortOption={sortOption}
                       setSortOption={setSortOption}
@@ -329,10 +484,9 @@ export default function App() {
                 layout
                 style={{ flex: 1, width: "100%" }}
               >
-                {/* Envolvemos el Grid en un AnimatePresence para controlar la entrada/salida suave */}
                 <AnimatePresence mode="wait">
                   <motion.div
-                    key={currentPage} // 👈 Crucial: le dice a Framer Motion que el componente cambió
+                    key={currentPage}
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -15 }}
@@ -352,7 +506,6 @@ export default function App() {
                   </motion.div>
                 </AnimatePresence>
 
-                {/* CONTROLES DE PAGINACIÓN */}
                 {totalPages > 1 && (
                   <div
                     className="pagination-controls"
@@ -367,7 +520,7 @@ export default function App() {
                     <button
                       className="btn-pagination"
                       onClick={() => {
-                        window.scrollTo({ top: 400, behavior: "smooth" }); // Extra: scroll suave hacia arriba
+                        window.scrollTo({ top: 400, behavior: "smooth" });
                         setCurrentPage((prev) => Math.max(prev - 1, 1));
                       }}
                       disabled={currentPage === 1}
@@ -386,7 +539,7 @@ export default function App() {
                     <button
                       className="btn-pagination"
                       onClick={() => {
-                        window.scrollTo({ top: 400, behavior: "smooth" }); // Extra: scroll suave hacia arriba
+                        window.scrollTo({ top: 400, behavior: "smooth" });
                         setCurrentPage((prev) =>
                           Math.min(prev + 1, totalPages),
                         );
@@ -409,7 +562,6 @@ export default function App() {
           </section>
         </main>
 
-        {/* 🎯 El nuevo Footer Dinámico reemplazando el bloque estático antiguo */}
         <Footer />
 
         <ProductQuickView
@@ -452,6 +604,16 @@ export default function App() {
           onPaymentSuccess={() => {
             setCart([]);
             showToast("¡Pedido realizado con éxito!", "success");
+          }}
+        />
+
+        {/* MODAL DE AUTENTICACIÓN */}
+        <AuthModal
+          isOpen={isAuthOpen}
+          onClose={() => setIsAuthOpen(false)}
+          onAuthSuccess={(userData) => {
+            setUser(userData);
+            showToast(`¡Bienvenido de nuevo, ${userData.name}!`, "success");
           }}
         />
 

@@ -3,9 +3,10 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingBag, Heart, Check } from "lucide-react";
 import { useToast } from "../context/ToastContext";
-import { getProductImage } from "../utils/imageHelper"; // 👈 IMPORTAMOS
+import { getProductImage } from "../utils/imageHelper";
+import { memo } from "react";
 
-export default function ProductCard({
+function ProductCard({
   product,
   isWishlisted,
   cart = [],
@@ -290,3 +291,5 @@ export default function ProductCard({
     </div>
   );
 }
+
+export default memo(ProductCard);
