@@ -20,7 +20,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: window.location.origin, // Redirige de vuelta a Nexo tras autenticar
+          redirectTo: `${window.location.origin}`,
         },
       });
       if (error) throw error;
