@@ -3077,3 +3077,22 @@ h2 {
     padding: 16px 0;
   }
 }
+
+/* 1. Hacemos que el contenedor principal ocupe mínimo el alto total de la ventana (100vh) */
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* 2. Le decimos al contenido de las páginas que se expanda para rellenar todo el espacio disponible */
+.main-content,
+main {
+  flex: 1 0 auto; /* Crece para empujar el footer al fondo si hay poco contenido */
+}
+
+/* 3. Nos aseguramos de que el footer no se encoge */
+footer,
+.site-footer {
+  flex-shrink: 0;
+}

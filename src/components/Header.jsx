@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
+import { NavLink } from "react-router-dom";
 import {
   Search,
   ShoppingBag,
@@ -25,6 +26,7 @@ export default function Header({
   onLoginToggle,
   products = [],
   onProductClick,
+  onLogoClick,
 }) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -109,36 +111,42 @@ export default function Header({
 
         {/* Brand Logo */}
         <div className="header-logo">
-          <a
-            href="/"
-            onClick={(e) => {
-              e.preventDefault();
-              setSearchTerm("");
+          <NavLink
+            to="/"
+            onClick={() => {
               setIsMenuOpen(false);
-              window.scrollTo({ top: 0, behavior: "smooth" });
+              if (onLogoClick) onLogoClick();
             }}
           >
             NEXO<span>.</span>
-          </a>
+          </NavLink>
         </div>
 
         {/* Links & Search Container */}
         <div className={`header-nav-wrapper ${isMenuOpen ? "is-open" : ""}`}>
           <nav className="header-nav">
+            {/* Abrir Comercio en una pestaña nueva */}
             <a
-              href="#catalog-explore"
+              href="/comercio"
+              target="_blank"
+              rel="noopener noreferrer"
               className="nav-link"
-              onClick={(e) => handleScrollToSection(e, "#catalog-explore")}
+              onClick={() => setIsMenuOpen(false)}
             >
               Comercio
             </a>
+
+            {/* Abrir Diario en una pestaña nueva */}
             <a
-              href="#catalog-explore"
+              href="/diario"
+              target="_blank"
+              rel="noopener noreferrer"
               className="nav-link"
-              onClick={(e) => handleScrollToSection(e, "#catalog-explore")}
+              onClick={() => setIsMenuOpen(false)}
             >
               Diario
             </a>
+
             <a
               href="#site-footer"
               className="nav-link"
@@ -299,7 +307,7 @@ export default function Header({
                 <img
                   src={user.avatar}
                   alt={user.name}
-                  referrerPolicy="no-referrer" // 👈 Agrega esto para permitir fotos de Google
+                  referrerPolicy="no-referrer"
                   style={{
                     width: "28px",
                     height: "28px",
@@ -369,7 +377,6 @@ export default function Header({
                   >
                     {user ? (
                       <>
-                        {/* Cabecera de usuario con avatar / iniciales */}
                         <div
                           style={{
                             display: "flex",
@@ -382,7 +389,7 @@ export default function Header({
                             <img
                               src={user.avatar}
                               alt={user.name}
-                              referrerPolicy="no-referrer" // 👈 Agrega esto para permitir fotos de Google
+                              referrerPolicy="no-referrer"
                               style={{
                                 width: "36px",
                                 height: "36px",

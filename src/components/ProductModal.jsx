@@ -2,13 +2,11 @@ import React, { useState } from "react";
 import { X, Star, ShoppingBag, Heart, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Variantes para el fondo oscuro difuminado
 const overlayVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1 },
 };
 
-// Variantes elásticas premium para la tarjeta central (Spring Physics)
 const modalVariants = {
   hidden: { opacity: 0, scale: 0.92, y: 15 },
   visible: {
@@ -32,7 +30,6 @@ export default function ProductModal({
   isWishlisted,
   onToggleWishlist,
 }) {
-  // Dejamos que AnimatePresence maneje el montaje/desmontaje de forma externa
   const [quantity, setQuantity] = useState(1);
 
   if (!product) return <AnimatePresence />;
@@ -46,8 +43,7 @@ export default function ProductModal({
     reviewsCount,
     image,
     description,
-    features,
-    reviews,
+    features = [],
   } = product;
 
   const incrementQty = () => setQuantity((prev) => prev + 1);
@@ -61,7 +57,7 @@ export default function ProductModal({
   return (
     <AnimatePresence>
       <div style={{ position: "relative", zIndex: 1100 }}>
-        {/* Fondo difuminado con desenfoque de hardware */}
+        {/* Fondo oscuro difuminado */}
         <motion.div
           className="modal-overlay"
           variants={overlayVariants}
@@ -75,17 +71,17 @@ export default function ProductModal({
             left: 0,
             width: "100%",
             height: "100%",
-            backgroundColor: "rgba(0, 0, 0, 0.4)",
-            backdropFilter: "blur(6px)",
-            WebkitBackdropFilter: "blur(6px)",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            backdropFilter: "blur(8px)",
+            WebkitBackdropFilter: "blur(8px)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            padding: "16px", // Margen lateral general para dispositivos móviles
+            padding: "16px",
             boxSizing: "border-box",
           }}
         >
-          {/* Tarjeta de Producto Animada */}
+          {/* Tarjeta de Producto con Límites Estrictos de Tamaño */}
           <motion.div
             className="product-modal-card"
             variants={modalVariants}
@@ -97,25 +93,27 @@ export default function ProductModal({
               backgroundColor: "#ffffff",
               borderRadius: "24px",
               width: "100%",
-              maxWidth: "880px", // Limite limpio de ancho para escritorio
-              maxHeight: "85vh", // Control estricto de altura responsiva
+              maxWidth: "800px",
+              maxHeight: "82vh", // Limita estrictamente la altura máxima
+              display: "flex",
+              flexDirection: "column",
               position: "relative",
-              boxShadow: "0 20px 50px rgba(0, 0, 0, 0.15)",
-              overflowY: "auto", // Desplazamiento limpio si el contenido supera la pantalla
+              boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+              overflow: "hidden", // Previene que la tarjeta crezca descontroladamente
               boxSizing: "border-box",
             }}
           >
-            {/* Botón de cierre con micro-interacción de escala */}
+            {/* Botón de cierre flotante */}
             <motion.button
               className="modal-close-btn"
               onClick={onClose}
               aria-label="Close modal"
-              whileHover={{ scale: 1.1, backgroundColor: "#f5f5f5" }}
+              whileHover={{ scale: 1.1, backgroundColor: "#f3f4f6" }}
               whileTap={{ scale: 0.9 }}
               style={{
                 position: "absolute",
-                top: 16,
-                right: 16,
+                top: "16px",
+                right: "16px",
                 background: "white",
                 border: "none",
                 width: "36px",
@@ -125,193 +123,312 @@ export default function ProductModal({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                zIndex: 10,
+                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                zIndex: 30,
               }}
             >
-              <X size={18} />
+              <X size={18} color="#374151" />
             </motion.button>
 
-            <div className="modal-body-grid">
-              {/* Sección de Imagen Izquierda */}
-              <div className="modal-image-section">
-                <img src={image} alt={name} className="modal-product-image" />
-              </div>
+            {/* Layout adaptable con Scroll Interno Seguro */}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                overflowY: "auto",
+                padding: "24px",
+                gap: "20px",
+              }}
+            >
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+                  gap: "20px",
+                  alignItems: "start",
+                }}
+              >
+                {/* Imagen con altura fija blindada */}
+                <div
+                  style={{
+                    width: "100%",
+                    height: "260px",
+                    borderRadius: "16px",
+                    overflow: "hidden",
+                    backgroundColor: "#f8fafc",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  <img
+                    src={image}
+                    alt={name}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "contain", // Asegura que la imagen completa del mouse encaje bien
+                      padding: "12px",
+                    }}
+                  />
+                </div>
 
-              {/* Sección de Información Derecha */}
-              <div className="modal-info-section">
-                <div className="modal-category-wishlist">
-                  <span className="modal-category-tag">{category}</span>
-
-                  {/* Botón interactivo de Lista de Deseos */}
-                  <motion.button
-                    className={`modal-wishlist-btn ${isWishlisted ? "active" : ""}`}
-                    onClick={() => onToggleWishlist(id)}
-                    whileTap={{ scale: 0.95 }}
+                {/* Detalles del Producto */}
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  <div
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      gap: "6px",
-                      background: isWishlisted
-                        ? "rgba(255, 59, 48, 0.06)"
-                        : "transparent",
-                      border: "none",
-                      color: isWishlisted ? "#ff3b30" : "#666666",
-                      cursor: "pointer",
-                      padding: "6px 12px",
-                      borderRadius: "8px",
-                      fontSize: "0.85rem",
-                      fontWeight: 500,
+                      justifyContent: "space-between",
+                      marginBottom: "8px",
+                      paddingRight: "40px", // Espacio para no chocar con la 'X' de cierre
                     }}
                   >
-                    <Heart
-                      size={16}
-                      style={{ fill: isWishlisted ? "#ff3b30" : "transparent" }}
-                    />
-                    <span>{isWishlisted ? "En favoritos" : "Guardar"}</span>
-                  </motion.button>
-                </div>
-
-                <h2 className="modal-product-title">{name}</h2>
-
-                <div className="modal-rating-price">
-                  <div className="card-rating">
-                    <div className="rating-stars">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          size={13}
-                          className={
-                            i < Math.floor(rating)
-                              ? "star-icon-filled"
-                              : "star-icon-empty"
-                          }
-                        />
-                      ))}
-                    </div>
-                    <span className="rating-num-bold">{rating.toFixed(1)}</span>
-                    <span className="rating-count">
-                      ({reviewsCount} opiniones)
+                    <span
+                      style={{
+                        textTransform: "uppercase",
+                        fontSize: "0.7rem",
+                        fontWeight: 700,
+                        letterSpacing: "0.05em",
+                        color: "#059669",
+                        backgroundColor: "#ecfdf5",
+                        padding: "4px 8px",
+                        borderRadius: "6px",
+                      }}
+                    >
+                      {category}
                     </span>
-                  </div>
-                  <div className="modal-price">${price.toFixed(2)}</div>
-                </div>
 
-                <div className="modal-divider" />
-
-                <p className="modal-description">{description}</p>
-
-                {/* Listado estético de características */}
-                <div className="modal-features-list">
-                  <h4>Especificaciones del producto</h4>
-                  <ul>
-                    {features.map((feature, i) => (
-                      <li key={i}>
-                        <Check size={14} className="feature-check-icon" />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="modal-divider" />
-
-                {/* Controles de Compra Inferiores */}
-                <div className="modal-action-row">
-                  <div className="quantity-selector">
-                    <button
-                      className="qty-btn"
-                      onClick={decrementQty}
-                      aria-label="Decrease quantity"
+                    <motion.button
+                      onClick={() => onToggleWishlist(id)}
+                      whileTap={{ scale: 0.95 }}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "4px",
+                        background: isWishlisted
+                          ? "rgba(255, 59, 48, 0.08)"
+                          : "transparent",
+                        border: "none",
+                        color: isWishlisted ? "#ff3b30" : "#6b7280",
+                        cursor: "pointer",
+                        padding: "4px 8px",
+                        borderRadius: "8px",
+                        fontSize: "0.8rem",
+                        fontWeight: 500,
+                      }}
                     >
-                      -
-                    </button>
-                    <span className="qty-value">{quantity}</span>
-                    <button
-                      className="qty-btn"
-                      onClick={incrementQty}
-                      aria-label="Increase quantity"
-                    >
-                      +
-                    </button>
+                      <Heart
+                        size={15}
+                        style={{
+                          fill: isWishlisted ? "#ff3b30" : "transparent",
+                        }}
+                      />
+                      <span>{isWishlisted ? "Favorito" : "Guardar"}</span>
+                    </motion.button>
                   </div>
 
-                  {/* Botón de checkout con respuesta física */}
-                  <motion.button
-                    className="btn btn-primary modal-add-to-cart-btn"
-                    onClick={handleAddToCart}
-                    whileHover={{ opacity: 0.9 }}
-                    whileTap={{ scale: 0.98 }}
+                  <h2
+                    style={{
+                      fontSize: "1.25rem",
+                      fontWeight: 700,
+                      color: "#111827",
+                      marginBottom: "8px",
+                      lineHeight: "1.2",
+                    }}
                   >
-                    <ShoppingBag size={16} />
-                    Añadir al Carrito — ${(price * quantity).toFixed(2)}
-                  </motion.button>
-                </div>
+                    {name}
+                  </h2>
 
-                <div className="modal-divider" />
-
-                {/* Resumen de Reviews */}
-                <div className="modal-reviews-section">
-                  <h4>Feedback de Clientes</h4>
-
-                  <div className="reviews-summary-card">
-                    <span className="reviews-average-score">
-                      {rating.toFixed(1)}
-                    </span>
-                    <div className="reviews-average-details">
-                      <div className="rating-stars">
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginBottom: "12px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "4px",
+                      }}
+                    >
+                      <div style={{ display: "flex", gap: "2px" }}>
                         {[...Array(5)].map((_, i) => (
                           <Star
                             key={i}
-                            size={14}
-                            className={
-                              i < Math.round(rating)
-                                ? "star-icon-filled"
-                                : "star-icon-empty"
+                            size={13}
+                            color={
+                              i < Math.floor(rating) ? "#f59e0b" : "#d1d5db"
+                            }
+                            fill={
+                              i < Math.floor(rating) ? "#f59e0b" : "transparent"
                             }
                           />
                         ))}
                       </div>
-                      <span className="rating-count">
-                        Basado en {reviewsCount} calificaciones
+                      <span
+                        style={{
+                          fontWeight: 700,
+                          fontSize: "0.8rem",
+                          color: "#111827",
+                        }}
+                      >
+                        {rating ? rating.toFixed(1) : "5.0"}
                       </span>
+                      <span style={{ fontSize: "0.75rem", color: "#6b7280" }}>
+                        ({reviewsCount})
+                      </span>
+                    </div>
+
+                    <div
+                      style={{
+                        fontSize: "1.3rem",
+                        fontWeight: 800,
+                        color: "#10b981",
+                      }}
+                    >
+                      ${price ? price.toFixed(2) : "0.00"}
                     </div>
                   </div>
 
-                  <div className="reviews-list">
-                    {reviews && reviews.length > 0 ? (
-                      reviews.map((rev) => (
-                        <div key={rev.id} className="review-item">
-                          <div className="review-header">
-                            <span className="review-author">{rev.name}</span>
-                            <span className="review-date">{rev.date}</span>
-                          </div>
-                          <div
-                            className="rating-stars"
-                            style={{ margin: "4px 0" }}
+                  <p
+                    style={{
+                      fontSize: "0.85rem",
+                      color: "#4b5563",
+                      lineHeight: "1.4",
+                      marginBottom: "12px",
+                    }}
+                  >
+                    {description}
+                  </p>
+
+                  {features && features.length > 0 && (
+                    <div style={{ marginBottom: "12px" }}>
+                      <h4
+                        style={{
+                          fontSize: "0.8rem",
+                          fontWeight: 600,
+                          color: "#374151",
+                          marginBottom: "6px",
+                        }}
+                      >
+                        Especificaciones:
+                      </h4>
+                      <ul
+                        style={{
+                          listStyle: "none",
+                          padding: 0,
+                          margin: 0,
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "4px",
+                        }}
+                      >
+                        {features.map((feature, i) => (
+                          <li
+                            key={i}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "6px",
+                              fontSize: "0.8rem",
+                              color: "#4b5563",
+                            }}
                           >
-                            {[...Array(5)].map((_, i) => (
-                              <Star
-                                key={i}
-                                size={11}
-                                className={
-                                  i < rev.rating
-                                    ? "star-icon-filled"
-                                    : "star-icon-empty"
-                                }
-                              />
-                            ))}
-                          </div>
-                          <p className="review-comment">{rev.comment}</p>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="review-comment text-secondary">
-                        No hay reseñas escritas para este producto todavía.
-                      </p>
-                    )}
-                  </div>
+                            <Check size={13} color="#10b981" />
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
+              </div>
+
+              {/* Botones de acción inferiores siempre visibles dentro del scroll */}
+              <div
+                style={{
+                  borderTop: "1px solid #f3f4f6",
+                  paddingTop: "16px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px",
+                  flexWrap: "wrap",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: "8px",
+                    overflow: "hidden",
+                  }}
+                >
+                  <button
+                    onClick={decrementQty}
+                    style={{
+                      padding: "6px 12px",
+                      border: "none",
+                      background: "#f9fafb",
+                      cursor: "pointer",
+                      fontWeight: 600,
+                    }}
+                  >
+                    -
+                  </button>
+                  <span
+                    style={{
+                      padding: "0 10px",
+                      fontWeight: 600,
+                      fontSize: "0.85rem",
+                    }}
+                  >
+                    {quantity}
+                  </span>
+                  <button
+                    onClick={incrementQty}
+                    style={{
+                      padding: "6px 12px",
+                      border: "none",
+                      background: "#f9fafb",
+                      cursor: "pointer",
+                      fontWeight: 600,
+                    }}
+                  >
+                    +
+                  </button>
+                </div>
+
+                <motion.button
+                  onClick={handleAddToCart}
+                  whileHover={{ opacity: 0.9 }}
+                  whileTap={{ scale: 0.98 }}
+                  style={{
+                    flex: 1,
+                    minWidth: "160px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                    backgroundColor: "#10b981",
+                    color: "#ffffff",
+                    border: "none",
+                    padding: "10px 16px",
+                    borderRadius: "8px",
+                    fontWeight: 600,
+                    fontSize: "0.85rem",
+                    cursor: "pointer",
+                    boxShadow: "0 4px 12px rgba(16, 185, 129, 0.2)",
+                  }}
+                >
+                  <ShoppingBag size={15} />
+                  <span>Añadir — ${(price * quantity).toFixed(2)}</span>
+                </motion.button>
               </div>
             </div>
           </motion.div>

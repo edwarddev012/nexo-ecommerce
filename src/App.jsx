@@ -1,8 +1,19 @@
-import { useState, useMemo, useEffect, useRef, lazy, Suspense } from "react";
+import React, {
+  useState,
+  useMemo,
+  useEffect,
+  useRef,
+  lazy,
+  Suspense,
+} from "react";
+import { Routes, Route } from "react-router-dom";
 import Header from "./components/Header";
 import Filters from "./components/Filters";
 import ProductGrid from "./components/ProductGrid";
 import Footer from "./components/Footer";
+import ComercioPage from "./pages/ComercioPage";
+import DiarioPage from "./pages/DiarioPage";
+
 const ProductQuickView = lazy(
   () => import("./components/ProductQuickView/ProductQuickView"),
 );
@@ -10,6 +21,7 @@ const CartDrawer = lazy(() => import("./components/CartDrawer"));
 const WishlistDrawer = lazy(() => import("./components/WishlistDrawer"));
 const CheckoutModal = lazy(() => import("./components/CheckoutModal"));
 const AuthModal = lazy(() => import("./components/AuthModal"));
+
 import products from "./data/products";
 import { motion, AnimatePresence } from "framer-motion";
 import { ToastNotification } from "./components/ToastNotification";
@@ -102,7 +114,6 @@ export default function App() {
 
     const initAuth = async () => {
       try {
-        // Consultamos la sesión actual guardada por Supabase
         const {
           data: { session },
         } = await supabase.auth.getSession();
@@ -136,7 +147,6 @@ export default function App() {
 
     initAuth();
 
-    // Escuchador de cambios de estado (Login, Logout, etc.)
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (session?.user) {
@@ -198,12 +208,11 @@ export default function App() {
       } catch (err) {
         console.error("Excepción al guardar carrito:", err);
       }
-    }, 500); // 👈 Espera 500ms de inactividad antes de golpear la API
+    }, 500);
 
-    return () => clearTimeout(timer); // Cancela la petición anterior si el usuario interactúa rápido
+    return () => clearTimeout(timer);
   }, [cart, user?.id]);
 
-  // --- 3. GUARDAR WISHLIST EN SUPABASE O LOCALSTORAGE ---
   useEffect(() => {
     if (!isDataLoaded.current) return;
 
@@ -352,7 +361,11 @@ export default function App() {
     setPriceRange(maxProductPrice);
   };
 
-  // --- LÓGICA DE BOTÓN DE SESIÓN (LOGIN / LOGOUT REAL) ---
+  const handleLogoClick = () => {
+    handleResetFilters(); // Limpia los filtros y regresa a la página 1 automáticamente
+    window.scrollTo({ top: 0, behavior: "smooth" }); // Sube la pantalla suavemente arriba
+  };
+
   const handleLoginToggle = async () => {
     if (user) {
       await supabase.auth.signOut();
@@ -409,213 +422,231 @@ export default function App() {
             setIsWishlistOpen(!isWishlistOpen);
             setIsCartOpen(false);
           }}
+          onLogoClick={handleLogoClick}
         />
 
-        <main className="main-content container anim-fade-in">
-          <section className="catalog-hero">
-            <div className="hero-content">
-              <h1>Tecnología que te entiende y te acompaña.</h1>
-              <p style={{ marginTop: "24px", marginBottom: "32px" }}>
-                Equipamiento premium optimizado para la cultura urbana.
-              </p>
-            </div>
-          </section>
+        {/* DEFINICIÓN DE RUTAS DIRECTAS (SIN DECLARACIONES INTERNAS) */}
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <main className="main-content container anim-fade-in">
+                <section className="catalog-hero">
+                  <div className="hero-content">
+                    <h1>Tecnología que te entiende y te acompaña.</h1>
+                    <p style={{ marginTop: "24px", marginBottom: "32px" }}>
+                      Equipamiento premium optimizado para la cultura urbana.
+                    </p>
+                  </div>
+                </section>
 
-          <section id="catalog-explore" className="catalog-section">
-            <div className="catalog-section-header">
-              <div>
-                <h2>CATÁLOGO GLOBAL</h2>
-                <p className="results-count">
-                  Mostrando {filteredProducts.length} lanzamientos indexados
-                </p>
-              </div>
-              <div>
-                <button
-                  className={`btn-toggle-filters ${
-                    showFilters ? "active" : ""
-                  }`}
-                  onClick={() => setShowFilters(!showFilters)}
-                >
-                  <SlidersHorizontal size={14} />
-                  <span>
-                    {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
-                  </span>
-                </button>
-              </div>
-            </div>
+                <section id="catalog-explore" className="catalog-section">
+                  <div className="catalog-section-header">
+                    <div>
+                      <h2>CATÁLOGO GLOBAL</h2>
+                      <p className="results-count">
+                        Mostrando {filteredProducts.length} lanzamientos
+                        indexados
+                      </p>
+                    </div>
+                    <div>
+                      <button
+                        className={`btn-toggle-filters ${
+                          showFilters ? "active" : ""
+                        }`}
+                        onClick={() => setShowFilters(!showFilters)}
+                      >
+                        <SlidersHorizontal size={14} />
+                        <span>
+                          {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
+                        </span>
+                      </button>
+                    </div>
+                  </div>
 
-            <div
-              className="catalog-layout"
-              style={{
-                display: "flex",
-                width: "100%",
-                gap: "32px",
-                alignItems: "flex-start",
-                justifyContent: "space-between",
-              }}
-            >
-              <AnimatePresence initial={false}>
-                {showFilters && (
-                  <motion.aside
-                    className="filters-sidebar"
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: "280px" }}
-                    exit={{ opacity: 0, width: 0 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    style={{ overflow: "hidden", flexShrink: 0 }}
-                  >
-                    <Filters
-                      selectedCategory={selectedCategory}
-                      setSelectedCategory={setSelectedCategory}
-                      sortOption={sortOption}
-                      setSortOption={setSortOption}
-                      priceRange={priceRange}
-                      setPriceRange={setPriceRange}
-                      categories={categories}
-                      maxProductPrice={maxProductPrice}
-                      onReset={handleResetFilters}
-                    />
-                  </motion.aside>
-                )}
-              </AnimatePresence>
-
-              <motion.div
-                className="products-grid-container"
-                layout
-                style={{ flex: 1, width: "100%" }}
-              >
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={currentPage}
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -15 }}
-                    transition={{ duration: 0.35, ease: "easeInOut" }}
-                  >
-                    <ProductGrid
-                      products={paginatedProducts}
-                      isLoading={isLoading}
-                      wishlist={wishlist}
-                      cart={cart}
-                      searchQuery={searchTerm}
-                      onProductClick={setSelectedProduct}
-                      onAddToCart={handleAddToCart}
-                      onToggleWishlist={handleToggleWishlist}
-                      onResetFilters={handleResetFilters}
-                    />
-                  </motion.div>
-                </AnimatePresence>
-
-                {totalPages > 1 && (
                   <div
-                    className="pagination-controls"
+                    className="catalog-layout"
                     style={{
-                      marginTop: "40px",
                       display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      gap: "16px",
+                      width: "100%",
+                      gap: "32px",
+                      alignItems: "flex-start",
+                      justifyContent: "space-between",
                     }}
                   >
-                    <button
-                      className="btn-pagination"
-                      onClick={() => {
-                        window.scrollTo({ top: 400, behavior: "smooth" });
-                        setCurrentPage((prev) => Math.max(prev - 1, 1));
-                      }}
-                      disabled={currentPage === 1}
-                      style={{
-                        opacity: currentPage === 1 ? 0.5 : 1,
-                        cursor: currentPage === 1 ? "not-allowed" : "pointer",
-                      }}
-                    >
-                      Anterior
-                    </button>
+                    <AnimatePresence initial={false}>
+                      {showFilters && (
+                        <motion.aside
+                          className="filters-sidebar"
+                          initial={{ opacity: 0, width: 0 }}
+                          animate={{ opacity: 1, width: "280px" }}
+                          exit={{ opacity: 0, width: 0 }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 300,
+                            damping: 30,
+                          }}
+                          style={{ overflow: "hidden", flexShrink: 0 }}
+                        >
+                          <Filters
+                            selectedCategory={selectedCategory}
+                            setSelectedCategory={setSelectedCategory}
+                            sortOption={sortOption}
+                            setSortOption={setSortOption}
+                            priceRange={priceRange}
+                            setPriceRange={setPriceRange}
+                            categories={categories}
+                            maxProductPrice={maxProductPrice}
+                            onReset={handleResetFilters}
+                          />
+                        </motion.aside>
+                      )}
+                    </AnimatePresence>
 
-                    <span style={{ fontSize: "14px", fontWeight: "500" }}>
-                      Página {currentPage} de {totalPages}
-                    </span>
-
-                    <button
-                      className="btn-pagination"
-                      onClick={() => {
-                        window.scrollTo({ top: 400, behavior: "smooth" });
-                        setCurrentPage((prev) =>
-                          Math.min(prev + 1, totalPages),
-                        );
-                      }}
-                      disabled={currentPage === totalPages}
-                      style={{
-                        opacity: currentPage === totalPages ? 0.5 : 1,
-                        cursor:
-                          currentPage === totalPages
-                            ? "not-allowed"
-                            : "pointer",
-                      }}
+                    <motion.div
+                      className="products-grid-container"
+                      layout
+                      style={{ flex: 1, width: "100%" }}
                     >
-                      Siguiente
-                    </button>
+                      <AnimatePresence mode="wait">
+                        <motion.div
+                          key={currentPage}
+                          initial={{ opacity: 0, y: 15 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -15 }}
+                          transition={{ duration: 0.35, ease: "easeInOut" }}
+                        >
+                          <ProductGrid
+                            products={paginatedProducts}
+                            isLoading={isLoading}
+                            wishlist={wishlist}
+                            cart={cart}
+                            searchQuery={searchTerm}
+                            onProductClick={setSelectedProduct}
+                            onAddToCart={handleAddToCart}
+                            onToggleWishlist={handleToggleWishlist}
+                            onResetFilters={handleResetFilters}
+                          />
+                        </motion.div>
+                      </AnimatePresence>
+
+                      {totalPages > 1 && (
+                        <div
+                          className="pagination-controls"
+                          style={{
+                            marginTop: "40px",
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            gap: "16px",
+                          }}
+                        >
+                          <button
+                            className="btn-pagination"
+                            onClick={() => {
+                              window.scrollTo({ top: 400, behavior: "smooth" });
+                              setCurrentPage((prev) => Math.max(prev - 1, 1));
+                            }}
+                            disabled={currentPage === 1}
+                            style={{
+                              opacity: currentPage === 1 ? 0.5 : 1,
+                              cursor:
+                                currentPage === 1 ? "not-allowed" : "pointer",
+                            }}
+                          >
+                            Anterior
+                          </button>
+
+                          <span style={{ fontSize: "14px", fontWeight: "500" }}>
+                            Página {currentPage} de {totalPages}
+                          </span>
+
+                          <button
+                            className="btn-pagination"
+                            onClick={() => {
+                              window.scrollTo({ top: 400, behavior: "smooth" });
+                              setCurrentPage((prev) =>
+                                Math.min(prev + 1, totalPages),
+                              );
+                            }}
+                            disabled={currentPage === totalPages}
+                            style={{
+                              opacity: currentPage === totalPages ? 0.5 : 1,
+                              cursor:
+                                currentPage === totalPages
+                                  ? "not-allowed"
+                                  : "pointer",
+                            }}
+                          >
+                            Siguiente
+                          </button>
+                        </div>
+                      )}
+                    </motion.div>
                   </div>
-                )}
-              </motion.div>
-            </div>
-          </section>
-        </main>
+                </section>
+              </main>
+            }
+          />
+          <Route path="/comercio" element={<ComercioPage />} />
+          <Route path="/diario" element={<DiarioPage />} />
+        </Routes>
 
         <Footer />
 
-        <ProductQuickView
-          isOpen={selectedProduct !== null}
-          product={selectedProduct}
-          onClose={() => setSelectedProduct(null)}
-          onAddToCart={handleAddToCart}
-          cart={cart}
-          isFavorite={
-            selectedProduct ? wishlist.includes(selectedProduct.id) : false
-          }
-          onToggleWishlist={handleToggleWishlist}
-        />
+        <Suspense fallback={null}>
+          <ProductQuickView
+            isOpen={selectedProduct !== null}
+            product={selectedProduct}
+            onClose={() => setSelectedProduct(null)}
+            onAddToCart={handleAddToCart}
+            cart={cart}
+            isFavorite={
+              selectedProduct ? wishlist.includes(selectedProduct.id) : false
+            }
+            onToggleWishlist={handleToggleWishlist}
+          />
 
-        <CartDrawer
-          isOpen={isCartOpen}
-          onClose={() => setIsCartOpen(false)}
-          cartItems={cartItemsFormatted}
-          onUpdateQuantity={handleUpdateQty}
-          onRemove={handleRemoveFromCart}
-          totalAmount={totalAmount}
-          onCheckout={() => {
-            setIsCartOpen(false);
-            setIsCheckoutOpen(true);
-          }}
-        />
+          <CartDrawer
+            isOpen={isCartOpen}
+            onClose={() => setIsCartOpen(false)}
+            cartItems={cartItemsFormatted}
+            onUpdateQuantity={handleUpdateQty}
+            onRemove={handleRemoveFromCart}
+            totalAmount={totalAmount}
+            onCheckout={() => {
+              setIsCartOpen(false);
+              setIsCheckoutOpen(true);
+            }}
+          />
 
-        <WishlistDrawer
-          isOpen={isWishlistOpen}
-          onClose={() => setIsWishlistOpen(false)}
-          wishlistItems={wishlistItems}
-          onRemove={handleToggleWishlist}
-          onMoveToCart={handleMoveToCart}
-        />
+          <WishlistDrawer
+            isOpen={isWishlistOpen}
+            onClose={() => setIsWishlistOpen(false)}
+            wishlistItems={wishlistItems}
+            onRemove={handleToggleWishlist}
+            onMoveToCart={handleMoveToCart}
+          />
 
-        <CheckoutModal
-          isOpen={isCheckoutOpen}
-          onClose={() => setIsCheckoutOpen(false)}
-          totalAmount={totalAmount}
-          onPaymentSuccess={() => {
-            setCart([]);
-            showToast("¡Pedido realizado con éxito!", "success");
-          }}
-        />
+          <CheckoutModal
+            isOpen={isCheckoutOpen}
+            onClose={() => setIsCheckoutOpen(false)}
+            totalAmount={totalAmount}
+            onPaymentSuccess={() => {
+              setCart([]);
+              showToast("¡Pedido realizado con éxito!", "success");
+            }}
+          />
 
-        {/* MODAL DE AUTENTICACIÓN */}
-        <AuthModal
-          isOpen={isAuthOpen}
-          onClose={() => setIsAuthOpen(false)}
-          onAuthSuccess={(userData) => {
-            setUser(userData);
-            showToast(`¡Bienvenido de nuevo, ${userData.name}!`, "success");
-          }}
-        />
+          <AuthModal
+            isOpen={isAuthOpen}
+            onClose={() => setIsAuthOpen(false)}
+            onAuthSuccess={(userData) => {
+              setUser(userData);
+              showToast(`¡Bienvenido de nuevo, ${userData.name}!`, "success");
+            }}
+          />
+        </Suspense>
 
         <AnimatePresence>
           {toast.isOpen && (

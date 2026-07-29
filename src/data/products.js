@@ -46,12 +46,11 @@ const products = [
     image:
       "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?auto=format&fit=crop&w=600&q=80",
     description:
-      "Diseño ergonómico avanzado que reduce la tensión muscular de la muñeca. Equipado con un sensor óptico de alta precisión capaz de rastrear sobre cualquier superficie, incluido el vidrio, y rueda de desplazamiento rápido de acero.",
+      "Diseño ergonómico avanzado que reduce la tensión muscular de la muñeca. Equipado con un sensor óptico de alta precisión.",
     features: [
       "Ángulo de sujeción ergonómico de 57 grados para una postura natural",
       "Sensor de precisión ajustable hasta 8000 DPI con tracking sobre vidrio",
       "Rueda MagSpeed de acero mecanizado con desplazamiento hiperrápido",
-      "Batería recargable USB-C con autonomía de hasta 70 días continuos",
     ],
     reviews: [
       {
@@ -476,7 +475,7 @@ const products = [
   },
   {
     id: 14,
-    name: "Cuaderno Técnico de Notas A5 Blackout",
+    name: "Cuaderno de Notas A5 Blackout",
     price: 24.0,
     category: "Accesorios",
     rating: 4.8,
@@ -484,12 +483,10 @@ const products = [
     image:
       "https://images.unsplash.com/photo-1531346878377-a5be20888e57?auto=format&fit=crop&w=600&q=80",
     description:
-      "El lienzo analógico perfecto para plasmar tus esquemas, prototipos o ideas de código. Cuaderno de tapa dura de lino negro con páginas de papel de alto gramaje texturizado con sutil patrón de puntos.",
+      "El lienzo analógico perfecto para plasmar tus esquemas, prototipos o ideas de código.",
     features: [
       "160 páginas de papel premium de 120 g/m² resistente a la tinta de estilográfica",
       "Maquetación interior con cuadrícula de puntos gris claro espaciada a 5mm",
-      "Encuadernación cosida Smyth que permite una apertura totalmente plana a 180 grados",
-      "Cubierta de lino natural cepillado repellent al polvo con doble cinta marcapáginas",
     ],
     reviews: [
       {
@@ -512,7 +509,7 @@ const products = [
   },
   {
     id: 15,
-    name: "Bolígrafo de Precisión de Aluminio Vertex",
+    name: "Bolígrafo de Precisión de Aluminio",
     price: 35.0,
     category: "Accesorios",
     rating: 4.7,
@@ -520,12 +517,10 @@ const products = [
     image:
       "https://images.unsplash.com/photo-1583485088034-697b5bc54ccd?auto=format&fit=crop&w=600&q=80",
     description:
-      "Instrumento de escritura de por vida diseñado bajo pautas industriales estrictas. Cuerpo facetado anti-rodamiento equilibrado al milímetro para ofrecer trazos fluidos sin fatiga manual.",
+      "Instrumento de escritura de por vida diseñado bajo pautas industriales estrictas.",
     features: [
       "Cuerpo de aluminio anodizado texturizado con estrías de agarre micro-mecanizadas",
       "Silencioso mecanismo de clic retráctil mediante rodamientos internos de acero",
-      "Compatible con cartuchos de tinta de gel de alta fluidez estilo Schmidt o Parker",
-      "Clip integrado de resorte de acero pulido de alta retención",
     ],
     reviews: [
       {
@@ -548,7 +543,7 @@ const products = [
   },
   {
     id: 16,
-    name: "Lámpara de Mesa de Concreto y Filamento Retro",
+    name: "Lámpara de Mesa y Filamento Retro",
     price: 58.0,
     category: "Hogar",
     rating: 4.6,
@@ -556,12 +551,10 @@ const products = [
     image:
       "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=600&q=80",
     description:
-      "Contraste brutalista y cálido para tu mesita de noche o estantería. Base cilíndrica de concreto vertido a mano con un interruptor de palanca de latón clásico y bombilla de filamento LED expuesta.",
+      "Contraste brutalista y cálido para tu mesita de noche o estantería.",
     features: [
       "Base monolítica de hormigón arquitectónico pulido con burbujas naturales",
       "Interruptor de palanca metálica de latón con respuesta de clic mecánica",
-      "Bombilla LED Edison de filamento cálido en espiral de bajo consumo incluida",
-      "Cable trenzado de lino natural de 1.8 metros con enchufe reforzado",
     ],
     reviews: [
       {
@@ -656,7 +649,7 @@ const products = [
   },
   {
     id: 19,
-    name: "Soporte de Libros de Acero Geométrico (Par)",
+    name: "Soporte de Libros de Acero Geométrico",
     price: 32.0,
     category: "Hogar",
     rating: 4.8,
@@ -664,12 +657,10 @@ const products = [
     image:
       "https://huknkdlroxztrpfbfbqm.supabase.co/storage/v1/object/public/proyectos/soporte%20de%20libros.jpg",
     description:
-      "Sujeta tus volúmenes preferidos con un sutil juego de sombras. Sujeta-libros de diseño angular fabricados en láminas de acero cortadas con láser de alta precisión y acabado en pintura epoxi texturizada.",
+      "Sujeta tus volúmenes preferidos con un sutil juego de sombras.",
     features: [
       "Estructura monolítica de acero de 3mm de grosor capaz de sostener tomos pesados",
       "Corte láser de patrón geométrico asimétrico que crea efectos tridimensionales",
-      "Base inferior forrada en fieltro anti-deslizante de gran adherencia",
-      "Acabado con recubrimiento de polvo negro mate texturizado anti-rayaduras",
     ],
     reviews: [
       {
@@ -880,12 +871,10 @@ const products = [
     image:
       "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&w=600&q=80",
     description:
-      "Captura tu voz con claridad de estudio para podcasts, streaming o grabaciones musicales. Con patrón polar cardioide de precisión, cuerpo metálico y conexión plug-and-play USB-C.",
+      "Captura tu voz con claridad de estudio para podcasts, streaming o grabaciones musicales.",
     features: [
       "Cápsula de condensador de 25mm con calidad de estudio",
       "Conversión de audio de alta resolución de 24 bits/96 kHz",
-      "Botón de silencio táctil de respuesta rápida con indicador LED",
-      "Conector para auriculares de 3.5mm integrado con cero latencia",
     ],
     reviews: [
       {
@@ -1627,7 +1616,7 @@ const products = [
   },
   {
     id: 46,
-    name: "Cuaderno de Notas Técnico Tapa Dura",
+    name: "Cuaderno de Notas Tapa Dura",
     price: 28.0,
     category: "Accesorios",
     rating: 4.8,
@@ -1635,12 +1624,10 @@ const products = [
     image:
       "https://images.unsplash.com/photo-1531346878377-a5be20888e57?auto=format&fit=crop&w=600&q=80",
     description:
-      "El compañero analógico definitivo para diseñadores y programadores. Cuaderno técnico A5 con cuadrícula de puntos y papel grueso que soporta todo tipo de tintas.",
+      "El compañero analógico definitivo para diseñadores y programadores.",
     features: [
       "Páginas de papel premium de 120 g/m² libre de ácidos de alta durabilidad",
       "Páginas numeradas y tabla de índice inicial de organización",
-      "Encuadernación cosida que permite una apertura totalmente plana",
-      "Bolsillo de fuelle interno trasero para guardar tarjetas de visita o notas",
     ],
     reviews: [
       {
@@ -1707,12 +1694,10 @@ const products = [
     image:
       "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=600&q=80",
     description:
-      "La combinación definitiva de delgadez y protección para tu setup de viaje. Diseño ultradelgado, carcasa semirígida resistente al agua y compartimentos acolchados dedicados.",
+      "La combinación definitiva de delgadez y protección para tu setup de viaje.",
     features: [
       "Compartimento flotante para laptops de hasta 16 pulgadas",
       "Tejido de poliuretano mate repellent al agua y de fácil limpieza",
-      "Perfil súper plano de solo 10cm de grosor que mantiene una silueta esbelta",
-      "Correas acolchadas con espuma EVA de celda cerrada y canal de aire trasero",
     ],
     reviews: [
       {
