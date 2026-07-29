@@ -359,11 +359,12 @@ export default function App() {
     setSelectedCategory("Todos");
     setSortOption("featured");
     setPriceRange(maxProductPrice);
+    setCurrentPage(1);
   };
 
   const handleLogoClick = () => {
-    handleResetFilters(); // Limpia los filtros y regresa a la página 1 automáticamente
-    window.scrollTo({ top: 0, behavior: "smooth" }); // Sube la pantalla suavemente arriba
+    handleResetFilters();
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleLoginToggle = async () => {
