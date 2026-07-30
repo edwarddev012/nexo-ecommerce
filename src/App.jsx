@@ -452,9 +452,7 @@ export default function App() {
                     </div>
                     <div>
                       <button
-                        className={`btn-toggle-filters ${
-                          showFilters ? "active" : ""
-                        }`}
+                        className={`btn-toggle-filters ${showFilters ? "active" : ""}`}
                         onClick={() => setShowFilters(!showFilters)}
                       >
                         <SlidersHorizontal size={14} />
@@ -465,29 +463,20 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div
-                    className="catalog-layout"
-                    style={{
-                      display: "flex",
-                      width: "100%",
-                      gap: "32px",
-                      alignItems: "flex-start",
-                      justifyContent: "space-between",
-                    }}
-                  >
+                  {/* Contenedor del Catálogo: Removimos el display:flex inline para dejar que el CSS o las media queries lo manejen */}
+                  <div className="catalog-layout">
                     <AnimatePresence initial={false}>
                       {showFilters && (
                         <motion.aside
                           className="filters-sidebar"
-                          initial={{ opacity: 0, width: 0 }}
-                          animate={{ opacity: 1, width: "280px" }}
-                          exit={{ opacity: 0, width: 0 }}
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
                           transition={{
                             type: "spring",
                             stiffness: 300,
                             damping: 30,
                           }}
-                          style={{ overflow: "hidden", flexShrink: 0 }}
                         >
                           <Filters
                             selectedCategory={selectedCategory}
@@ -507,7 +496,7 @@ export default function App() {
                     <motion.div
                       className="products-grid-container"
                       layout
-                      style={{ flex: 1, width: "100%" }}
+                      style={{ width: "100%" }}
                     >
                       <AnimatePresence mode="wait">
                         <motion.div

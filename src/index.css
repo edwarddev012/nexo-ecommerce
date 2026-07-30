@@ -3110,3 +3110,29 @@ img {
   max-width: 100%;
   height: auto;
 }
+
+/* Layout base para el catálogo */
+.catalog-layout {
+  display: flex;
+  flex-direction: column; /* En móviles va uno debajo del otro */
+  gap: 24px;
+  width: 100%;
+}
+
+.filters-sidebar {
+  width: 100%;
+}
+
+/* En pantallas de escritorio (más de 768px), se ponen uno al lado del otro */
+@media (min-width: 768px) {
+  .catalog-layout {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 32px;
+  }
+
+  .filters-sidebar {
+    width: 280px;
+    flex-shrink: 0;
+  }
+}
