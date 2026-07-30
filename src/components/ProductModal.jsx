@@ -8,7 +8,7 @@ const overlayVariants = {
 };
 
 const modalVariants = {
-  hidden: { opacity: 0, scale: 0.92, y: 15 },
+  hidden: { opacity: 0, scale: 0.95, y: 15 },
   visible: {
     opacity: 1,
     scale: 1,
@@ -32,7 +32,7 @@ export default function ProductModal({
 }) {
   const [quantity, setQuantity] = useState(1);
 
-  if (!product) return <AnimatePresence />;
+  if (!product) return null;
 
   const {
     id,
@@ -57,7 +57,7 @@ export default function ProductModal({
   return (
     <AnimatePresence>
       <div style={{ position: "relative", zIndex: 1100 }}>
-        {/* Fondo oscuro difuminado */}
+        {/* Fondo oscuro con toque táctil directo */}
         <motion.div
           className="modal-overlay"
           variants={overlayVariants}
@@ -70,18 +70,18 @@ export default function ProductModal({
             top: 0,
             left: 0,
             width: "100%",
-            height: "100%",
+            height: "100dvh", // 🟢 1. Usamos dvh (Dynamic Viewport Height) para corregir la barra del navegador móvil
             backgroundColor: "rgba(0, 0, 0, 0.5)",
             backdropFilter: "blur(8px)",
             WebkitBackdropFilter: "blur(8px)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            padding: "16px",
+            padding: "12px", // Reducimos un poco el padding en pantallas chicas
             boxSizing: "border-box",
+            overflow: "hidden", // Previene scroll no deseado en el fondo
           }}
         >
-          {/* Tarjeta de Producto con Límites Estrictos de Tamaño */}
           <motion.div
             className="product-modal-card"
             variants={modalVariants}
@@ -94,12 +94,12 @@ export default function ProductModal({
               borderRadius: "24px",
               width: "100%",
               maxWidth: "800px",
-              maxHeight: "82vh", // Limita estrictamente la altura máxima
+              maxHeight: "85dvh", // 🟢 2. Control de altura segura para móviles
               display: "flex",
               flexDirection: "column",
               position: "relative",
               boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
-              overflow: "hidden", // Previene que la tarjeta crezca descontroladamente
+              overflow: "hidden",
               boxSizing: "border-box",
             }}
           >
@@ -112,8 +112,8 @@ export default function ProductModal({
               whileTap={{ scale: 0.9 }}
               style={{
                 position: "absolute",
-                top: "16px",
-                right: "16px",
+                top: "12px",
+                right: "12px",
                 background: "white",
                 border: "none",
                 width: "36px",
@@ -130,29 +130,31 @@ export default function ProductModal({
               <X size={18} color="#374151" />
             </motion.button>
 
-            {/* Layout adaptable con Scroll Interno Seguro */}
+            {/* Layout Interno con Flexbox responsivo sin romper el ancho */}
             <div
               style={{
                 display: "flex",
                 flexDirection: "column",
                 overflowY: "auto",
-                padding: "24px",
-                gap: "20px",
+                WebkitOverflowScrolling: "touch", // 🟢 3. Scroll suave nativo en iOS/Android
+                padding: "20px 16px",
+                gap: "16px",
               }}
             >
+              {/* Contenedor adaptativo flexible */}
               <div
                 style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-                  gap: "20px",
-                  alignItems: "start",
+                  display: "flex",
+                  flexDirection: "column", // 🟢 4. Flex por defecto (columna en móviles)
+                  gap: "16px",
+                  width: "100%",
                 }}
               >
-                {/* Imagen con altura fija blindada */}
+                {/* Imagen */}
                 <div
                   style={{
                     width: "100%",
-                    height: "260px",
+                    height: "220px",
                     borderRadius: "16px",
                     overflow: "hidden",
                     backgroundColor: "#f8fafc",
@@ -168,21 +170,27 @@ export default function ProductModal({
                     style={{
                       width: "100%",
                       height: "100%",
-                      objectFit: "contain", // Asegura que la imagen completa del mouse encaje bien
+                      objectFit: "contain",
                       padding: "12px",
                     }}
                   />
                 </div>
 
-                {/* Detalles del Producto */}
-                <div style={{ display: "flex", flexDirection: "column" }}>
+                {/* Detalles */}
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    width: "100%",
+                  }}
+                >
                   <div
                     style={{
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "space-between",
                       marginBottom: "8px",
-                      paddingRight: "40px", // Espacio para no chocar con la 'X' de cierre
+                      paddingRight: "36px",
                     }}
                   >
                     <span
@@ -231,11 +239,12 @@ export default function ProductModal({
 
                   <h2
                     style={{
-                      fontSize: "1.25rem",
+                      fontSize: "1.15rem",
                       fontWeight: 700,
                       color: "#111827",
                       marginBottom: "8px",
-                      lineHeight: "1.2",
+                      lineHeight: "1.3",
+                      wordBreak: "break-word", // Evita que textos largos rompan el ancho
                     }}
                   >
                     {name}
@@ -286,7 +295,7 @@ export default function ProductModal({
 
                     <div
                       style={{
-                        fontSize: "1.3rem",
+                        fontSize: "1.25rem",
                         fontWeight: 800,
                         color: "#10b981",
                       }}
@@ -349,15 +358,15 @@ export default function ProductModal({
                 </div>
               </div>
 
-              {/* Botones de acción inferiores siempre visibles dentro del scroll */}
+              {/* Controles del Carrito */}
               <div
                 style={{
                   borderTop: "1px solid #f3f4f6",
-                  paddingTop: "16px",
+                  paddingTop: "14px",
                   display: "flex",
                   alignItems: "center",
-                  gap: "12px",
-                  flexWrap: "wrap",
+                  gap: "10px",
+                  flexWrap: "nowrap", // Mantiene todo en una sola fila compacta
                 }}
               >
                 <div
@@ -367,12 +376,13 @@ export default function ProductModal({
                     border: "1px solid #e5e7eb",
                     borderRadius: "8px",
                     overflow: "hidden",
+                    flexShrink: 0,
                   }}
                 >
                   <button
                     onClick={decrementQty}
                     style={{
-                      padding: "6px 12px",
+                      padding: "8px 12px",
                       border: "none",
                       background: "#f9fafb",
                       cursor: "pointer",
@@ -383,7 +393,7 @@ export default function ProductModal({
                   </button>
                   <span
                     style={{
-                      padding: "0 10px",
+                      padding: "0 8px",
                       fontWeight: 600,
                       fontSize: "0.85rem",
                     }}
@@ -393,7 +403,7 @@ export default function ProductModal({
                   <button
                     onClick={incrementQty}
                     style={{
-                      padding: "6px 12px",
+                      padding: "8px 12px",
                       border: "none",
                       background: "#f9fafb",
                       cursor: "pointer",
@@ -406,19 +416,17 @@ export default function ProductModal({
 
                 <motion.button
                   onClick={handleAddToCart}
-                  whileHover={{ opacity: 0.9 }}
                   whileTap={{ scale: 0.98 }}
                   style={{
                     flex: 1,
-                    minWidth: "160px",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    gap: "8px",
+                    gap: "6px",
                     backgroundColor: "#10b981",
                     color: "#ffffff",
                     border: "none",
-                    padding: "10px 16px",
+                    padding: "10px 12px",
                     borderRadius: "8px",
                     fontWeight: 600,
                     fontSize: "0.85rem",
