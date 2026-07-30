@@ -20,7 +20,7 @@ export default function ProductGrid({
           display: "grid",
           width: "100%",
           minWidth: "100%",
-          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+          gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
           gap: "24px",
           alignItems: "stretch",
           justifyContent: "stretch",

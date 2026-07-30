@@ -3096,3 +3096,17 @@ footer,
 .site-footer {
   flex-shrink: 0;
 }
+
+/* Fuerza a que NADA en la aplicación pueda salirse del ancho de la pantalla en teléfonos */
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden !important;
+  position: relative;
+}
+
+/* Regla de oro para imágenes en móviles */
+img {
+  max-width: 100%;
+  height: auto;
+}
