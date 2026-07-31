@@ -78,11 +78,15 @@ export default function WishlistDrawer({
     document.addEventListener("keydown", handleKeyDown);
 
     document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.width = "100%";
 
     return () => {
       document.removeEventListener("mousedown", handleOutsideClick, true);
       document.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.width = "";
     };
   }, [isOpen, onClose, isMounted]);
 
