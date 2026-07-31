@@ -129,3 +129,566 @@
   transform: scale(1.05);
   background: var(--bg-secondary, #f8fafc);
 }
+
+/* 1. Asegurar que el modal no se desborde y mantenga padding cómodo */
+.modal-container {
+  background-color: var(--bg-card, #ffffff);
+  border-radius: var(--radius-lg, 16px);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.08));
+  width: 90%;
+  max-width: 850px;
+  max-height: 85vh; /* Altura máxima para que no se salga de la pantalla */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Evita que el contenido sobresalga de los bordes redondeados */
+  position: relative;
+}
+
+/* 2. Grid/Flex adaptable para móviles */
+.modal-body-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  overflow-y: auto; /* Permite scroll interno si la pantalla es muy pequeña */
+}
+
+/* 3. Ajustes específicos para móviles */
+@media (max-width: 768px) {
+  .modal-body-grid {
+    grid-template-columns: 1fr; /* Pasa a 1 sola columna */
+    gap: 1rem;
+    padding: 1.25rem;
+  }
+
+  /* Reducir tamaño de la imagen en móvil para dar espacio a los textos y botones */
+  .modal-image-section img {
+    max-height: 180px;
+    object-fit: contain;
+    width: 100%;
+  }
+
+  /* Alineación del texto */
+  .modal-info-section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Alinea título y precio a la izquierda */
+    text-align: left;
+  }
+
+  .modal-info-section h2 {
+    font-size: 1.25rem; /* Tamaño de título más ajustado */
+    margin-bottom: 0.25rem;
+  }
+
+  .modal-info-section .description {
+    font-size: 0.875rem;
+    line-height: 1.4;
+    margin-bottom: 1rem;
+    /* Limita la descripción a 3 líneas en móvil para no tapar los botones */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* 4. Asegurar que la barra de acciones (Botones) sea visible y alineada */
+  .actions-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    margin-top: auto; /* Empuja los botones al final del contenedor */
+    padding-top: 0.5rem;
+  }
+
+  .btn-add-cart {
+    flex: 1; /* Hace que el botón de carrito tome todo el espacio disponible */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  .btn-wishlist {
+    flex-shrink: 0; /* Mantiene el botón de corazón cuadrado */
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* Overlay y modal principal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modal-container {
+  background-color: var(--bg-card, #ffffff);
+  border-radius: var(--radius-lg, 16px);
+  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.08));
+  width: 100%;
+  max-width: 750px;
+  max-height: 85vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 20;
+  background: var(--bg-primary, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* Grid de contenido */
+.modal-body-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  max-height: calc(85vh - 2rem);
+  overflow-y: auto;
+}
+
+.modal-image-section img {
+  width: 100%;
+  height: 100%;
+  max-height: 280px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.modal-info-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem 0;
+  color: var(--text-primary, #0f172a);
+}
+
+.modal-price {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--primary-color, #2563eb);
+  margin: 0;
+}
+
+.modal-description {
+  font-size: 0.875rem;
+  color: var(--text-secondary, #64748b);
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Acciones (Botones) */
+.actions-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.5rem;
+}
+
+.btn-add-cart {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1rem;
+  background-color: var(--primary-color, #0f172a);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.btn-add-cart.added {
+  background-color: #10b981;
+}
+
+.btn-wishlist {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 8px;
+  color: var(--text-secondary, #64748b);
+  cursor: pointer;
+}
+
+.btn-wishlist.active {
+  color: #ef4444;
+  border-color: #fca5a5;
+  background-color: #fef2f2;
+}
+
+/* Ajustes Responsivos Móvil */
+@media (max-width: 640px) {
+  .modal-body-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .modal-image-section img {
+    max-height: 160px;
+  }
+}
+
+/* Layout Base (Escritorio / Tu diseño original) */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(6px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modal-container {
+  background-color: var(--bg-card, #ffffff);
+  border-radius: var(--radius-lg, 16px);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.08));
+  width: 100%;
+  max-width: 850px;
+  max-height: 90vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 10;
+  background: var(--bg-primary, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-secondary, #64748b);
+  transition: all 0.2s ease;
+}
+
+.modal-close-btn:hover {
+  transform: scale(1.05);
+  background: var(--bg-secondary, #f8fafc);
+}
+
+.modal-body-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  padding: 2rem;
+}
+
+.modal-image-section img {
+  width: 100%;
+  height: auto;
+  max-height: 350px;
+  object-fit: contain;
+  border-radius: 12px;
+}
+
+.modal-info-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.modal-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary, #0f172a);
+  margin-bottom: 0.5rem;
+}
+
+.modal-price {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--primary-color, #2563eb);
+  margin-bottom: 1rem;
+}
+
+.modal-description {
+  color: var(--text-secondary, #64748b);
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.actions-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.btn-add-cart {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1.25rem;
+  background-color: var(--primary-color, #0f172a);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-add-cart.added {
+  background-color: #10b981;
+}
+
+.btn-wishlist {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 10px;
+  color: var(--text-secondary, #64748b);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-wishlist.active {
+  color: #ef4444;
+  border-color: #fca5a5;
+  background-color: #fef2f2;
+}
+
+/* 📱 AJUSTE EXCLUSIVO PARA TELÉFONOS (Mantiene tu diseño sin romper el layout) */
+@media (max-width: 768px) {
+  .modal-container {
+    max-height: 85vh; /* Evita que la tarjeta sea más alta que la pantalla del celular */
+  }
+
+  .modal-body-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 1.25rem;
+    max-height: calc(85vh - 1rem);
+    overflow-y: auto; /* Permite scroll solo si la pantalla del celular es muy pequeña */
+  }
+
+  .modal-image-section img {
+    max-height: 170px; /* Tamaño controlado de imagen en móvil */
+  }
+
+  .modal-title {
+    font-size: 1.2rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .modal-price {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .modal-description {
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+    /* Recorta suavemente textos muy largos en móviles para asegurar espacio */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .btn-add-cart {
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  .btn-wishlist {
+    width: 42px;
+    height: 42px;
+  }
+}
+
+/* Botón de Carrito (Estilo Píldora/Redondeado) */
+.btn-add-cart {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1.25rem;
+  background-color: var(--primary-color, #0f172a);
+  color: #ffffff;
+  border: none;
+  border-radius: 9999px; /* 👈 Borde completamente redondeado */
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+/* Botón del Corazón (Perfectamente Circular) */
+.btn-wishlist {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 50%; /* 👈 Círculo perfecto */
+  color: var(--text-secondary, #64748b);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Botón de Añadir al Carrito (Fondo Blanco, Letras Negras, Borde Suave) */
+.btn-add-cart {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1.25rem;
+  background-color: #ffffff; /* 👈 Fondo blanco */
+  color: #0f172a; /* 👈 Texto e ícono en negro / azul oscuro */
+  border: 1px solid var(--border-color, #e2e8f0); /* 👈 Borde sutil para dar estructura */
+  border-radius: 9999px; /* Estilo píldora / redondeado */
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Estado Hover (Efecto suave al pasar el cursor) */
+.btn-add-cart:hover {
+  background-color: var(--bg-secondary, #f8fafc);
+  border-color: #cbd5e1;
+}
+
+/* Estado Añadido (Mantiene el verde para confirmar la acción) */
+.btn-add-cart.added {
+  background-color: #10b981;
+  color: #ffffff;
+  border-color: #10b981;
+}
+
+/* 1. Contenedor de cada ítem (Aplica tanto para Carrito como para Wishlist) */
+.cart-item,
+.wishlist-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.875rem 1rem;
+  background-color: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: var(--radius-md, 12px);
+  margin-bottom: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+/* 2. Miniatura de la imagen estandarizada */
+.cart-item img,
+.wishlist-item img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  border-radius: 8px;
+  background-color: var(--bg-secondary, #f8fafc);
+  flex-shrink: 0; /* Evita que la imagen se deforme si el texto es largo */
+}
+
+/* 3. Bloque de detalles del producto */
+.cart-item-info,
+.wishlist-item-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.cart-item-title,
+.wishlist-item-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary, #0f172a);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* Recorta texto largo elegantemente con "..." */
+}
+
+.cart-item-price,
+.wishlist-item-price {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--primary-color, #2563eb);
+  margin: 0;
+}
+
+/* 4. Botón de acción rápido (Cerrar / Eliminar / Mover) */
+.cart-item-action,
+.wishlist-item-action {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: none;
+  background-color: transparent;
+  color: var(--text-secondary, #64748b);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.cart-item-action:hover,
+.wishlist-item-action:hover {
+  background-color: #f1f5f9;
+  color: #ef4444;
+}

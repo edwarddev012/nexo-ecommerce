@@ -1,12 +1,13 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { X, Trash2, Heart, ShoppingCart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Variantes elásticas premium idénticas al CartDrawer
+// Variantes elásticas de panel lateral idénticas al CartDrawer
 const drawerVariants = {
   hidden: {
     opacity: 0,
-    x: "100%", // Sincronizado para que entre limpiamente desde afuera de la pantalla
+    x: "100%",
     transition: { duration: 0.3, ease: "easeInOut" },
   },
   visible: {
@@ -14,22 +15,17 @@ const drawerVariants = {
     x: 0,
     transition: {
       type: "tween",
-      ease: [0.25, 1, 0.5, 1], // Curva de velocidad "Quint" idéntica para consistencia total
+      ease: [0.25, 1, 0.5, 1],
       duration: 0.35,
     },
   },
 };
 
-// Sincronizado exactamente con el CartDrawer para el fundido del fondo oscuro
 const overlayVariants = {
   hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { duration: 0.3, ease: "easeOut" },
-  },
+  visible: { opacity: 1, transition: { duration: 0.3, ease: "easeOut" } },
 };
 
-// Variantes para el descarte lateral físico de cada producto
 const itemVariants = {
   initial: { opacity: 0, x: 20, scale: 0.95 },
   animate: { opacity: 1, x: 0, scale: 1 },
@@ -37,7 +33,7 @@ const itemVariants = {
     opacity: 0,
     x: 60,
     scale: 0.92,
-    transition: { duration: 0.22, ease: "easeOut" },
+    transition: { duration: 0.25, ease: "easeInOut" },
   },
 };
 
@@ -48,66 +44,91 @@ export default function WishlistDrawer({
   onRemove,
   onMoveToCart,
 }) {
-  // Referencia física para el panel lateral
   const drawerRef = useRef(null);
+  const [isMounted, setIsMounted] = useState(false);
 
+  // Asegura renderizado solo en cliente (evita pantallas en blanco y errores SSR)
   useEffect(() => {
-    if (!isOpen) return;
+    setIsMounted(true);
+  }, []);
+
+  // Manejo de clic afuera, tecla Escape y bloqueo de scroll
+  useEffect(() => {
+    if (!isOpen || !isMounted) return;
 
     const handleOutsideClick = (event) => {
       if (drawerRef.current && !drawerRef.current.contains(event.target)) {
-        if (event.target.closest(".header-btn") || event.target.closest(".btn-icon")) {
+        if (
+          event.target.closest(".header-btn") ||
+          event.target.closest(".btn-icon")
+        ) {
           return;
         }
         onClose();
       }
     };
 
-    // Escuchamos los clics en toda la pantalla (fase de captura para máxima precisión)
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+
     document.addEventListener("mousedown", handleOutsideClick, true);
+    document.addEventListener("keydown", handleKeyDown);
+
+    document.body.style.overflow = "hidden";
 
     return () => {
       document.removeEventListener("mousedown", handleOutsideClick, true);
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, isMounted]);
 
-  return (
+  if (!isMounted || typeof document === "undefined" || !document.body) {
+    return null;
+  }
+
+  const totalItems = Array.isArray(wishlistItems) ? wishlistItems.length : 0;
+
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
-        /* CONTENEDOR MAESTRO: Desactivado pointerEvents ("none") para dejar pasar el mouse al fondo */
         <div
           className="drawer-manager"
           style={{
             position: "fixed",
             inset: 0,
             zIndex: 9999,
-            pointerEvents: "none",
+            pointerEvents: "auto",
           }}
         >
-          {/* OVERLAY SUTIL: Animado pero traspasable al mouse */}
+          {/* Overlay / Fondo oscuro idéntico al carrito */}
           <motion.div
             className="drawer-overlay"
             variants={overlayVariants}
             initial="hidden"
             animate="visible"
             exit="hidden"
+            onClick={onClose}
             style={{
               position: "absolute",
               inset: 0,
-              backgroundColor: "rgba(0, 0, 0, 0.2)", // Bajado a 0.2 para mejor visibilidad del contenido trasero interactivo
-              pointerEvents: "none", // 👈 El mouse ignora esta capa por completo
+              backgroundColor: "rgba(0, 0, 0, 0.4)",
+              cursor: "pointer",
             }}
           />
 
-          {/* PANEL LATERAL: Recupera el control del mouse ("auto") y detecta clics externos */}
+          {/* Contenedor principal del Drawer */}
           <motion.aside
-            ref={drawerRef} // 👈 Conectamos la referencia aquí
+            ref={drawerRef}
             className="wishlist-drawer"
             variants={drawerVariants}
             initial="hidden"
             animate="visible"
             exit="hidden"
-            onClick={(e) => e.stopPropagation()} // Evita burbujeos accidentales
+            onClick={(e) => e.stopPropagation()}
             style={{
               position: "fixed",
               top: 0,
@@ -122,10 +143,9 @@ export default function WishlistDrawer({
               transform: "translateZ(0)",
               WebkitTransform: "translateZ(0)",
               zIndex: 10000,
-              pointerEvents: "auto", // 👈 ¡CLAVE! El mouse interactúa normalmente dentro de la lista
             }}
           >
-            {/* Drawer Header */}
+            {/* Header de la Lista de Deseos */}
             <div
               className="drawer-header"
               style={{
@@ -137,34 +157,42 @@ export default function WishlistDrawer({
               }}
             >
               <div
-                className="drawer-title"
                 style={{ display: "flex", alignItems: "center", gap: "10px" }}
               >
-                <Heart
-                  size={20}
-                  className="icon-heart-filled"
-                  style={{ fill: "#111111" }}
-                />
+                <motion.div
+                  key={totalItems}
+                  animate={{
+                    scale: [1, 1.25, 1],
+                  }}
+                  transition={{
+                    duration: 0.3,
+                    ease: "easeInOut",
+                  }}
+                  style={{ display: "flex", alignItems: "center" }}
+                >
+                  <Heart size={20} style={{ color: "#111", fill: "#111" }} />
+                </motion.div>
+
                 <h3
                   style={{ margin: 0, fontSize: "1.25rem", fontWeight: "600" }}
                 >
                   Tu Lista de Deseos
                 </h3>
                 <span
-                  className="wishlist-items-count"
                   style={{
                     fontSize: "0.9rem",
                     color: "#666",
                     fontWeight: "500",
                   }}
                 >
-                  ({wishlistItems ? wishlistItems.length : 0})
+                  ({totalItems})
                 </span>
               </div>
+
               <button
                 className="btn-icon drawer-close-btn"
                 onClick={onClose}
-                aria-label="Close wishlist"
+                aria-label="Cerrar lista de deseos"
                 style={{
                   background: "none",
                   border: "none",
@@ -180,45 +208,66 @@ export default function WishlistDrawer({
               </button>
             </div>
 
-            {/* Drawer Body */}
+            {/* Cuerpo de la Lista de Deseos */}
             <div
               className="drawer-body"
-              style={{ flex: 1, overflowY: "auto", padding: "20px" }}
+              style={{
+                flex: 1,
+                overflowY: "auto",
+                padding: "20px",
+                position: "relative",
+              }}
             >
-              {!wishlistItems || wishlistItems.length === 0 ? (
-                <div
-                  className="empty-drawer-state"
-                  style={{
-                    textAlign: "center",
-                    color: "#888",
-                    marginTop: "40px",
-                  }}
-                >
-                  <Heart
-                    size={48}
-                    strokeWidth={1}
-                    style={{ marginBottom: "16px" }}
-                  />
-                  <h3>Tu lista está vacía</h3>
-                  <p style={{ fontSize: "0.9rem", marginBottom: "20px" }}>
-                    Toca el icono de corazón en cualquier producto para
-                    guardarlo aquí.
-                  </p>
-                  <button className="btn btn-primary" onClick={onClose}>
-                    Explorar Productos
-                  </button>
-                </div>
-              ) : (
-                <div
-                  className="wishlist-items-list"
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "16px",
-                    position: "relative",
-                  }}
-                >
-                  <AnimatePresence mode="popLayout">
+              <AnimatePresence mode="popLayout">
+                {totalItems === 0 ? (
+                  <motion.div
+                    key="empty-wishlist-state"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.25 }}
+                    style={{
+                      textAlign: "center",
+                      color: "#888",
+                      marginTop: "40px",
+                    }}
+                  >
+                    <Heart
+                      strokeWidth={1}
+                      size={48}
+                      style={{ marginBottom: "16px", color: "#ccc" }}
+                    />
+                    <h4 style={{ margin: "0 0 8px 0", color: "#222" }}>
+                      Tu lista está vacía
+                    </h4>
+                    <p
+                      style={{
+                        fontSize: "0.85rem",
+                        margin: "0 0 20px 0",
+                        color: "#666",
+                      }}
+                    >
+                      Toca el icono de corazón en cualquier producto para
+                      guardarlo aquí.
+                    </p>
+                    <button
+                      className="btn btn-primary"
+                      onClick={onClose}
+                      style={{ padding: "10px 20px", fontSize: "0.9rem" }}
+                    >
+                      Explorar Productos
+                    </button>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="wishlist-items-container"
+                    className="wishlist-items-list"
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "16px",
+                    }}
+                  >
                     {wishlistItems.map((product) => (
                       <motion.div
                         key={product.id}
@@ -227,6 +276,11 @@ export default function WishlistDrawer({
                         initial="initial"
                         animate="animate"
                         exit="exit"
+                        transition={{
+                          type: "tween",
+                          ease: [0.25, 1, 0.5, 1],
+                          duration: 0.35,
+                        }}
                         className="wishlist-item"
                         style={{
                           display: "flex",
@@ -236,12 +290,13 @@ export default function WishlistDrawer({
                           borderRadius: "12px",
                           alignItems: "center",
                           border: "1px solid #eee",
+                          width: "100%",
+                          boxSizing: "border-box",
                         }}
                       >
                         <img
                           src={product.image}
                           alt={product.name}
-                          className="wishlist-item-image"
                           style={{
                             width: "72px",
                             height: "72px",
@@ -249,49 +304,45 @@ export default function WishlistDrawer({
                             objectFit: "cover",
                           }}
                         />
-                        <div className="wishlist-item-info" style={{ flex: 1 }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
                           <h4
-                            style={{ margin: "0 0 2px 0", fontSize: "0.95rem" }}
+                            style={{
+                              margin: "0 0 2px 0",
+                              fontSize: "0.95rem",
+                              fontWeight: "500",
+                              color: "#111",
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
                           >
                             {product.name}
                           </h4>
                           <span
-                            className="wishlist-item-category"
                             style={{
                               display: "block",
-                              fontSize: "0.8rem",
-                              color: "#777",
-                              marginBottom: "6px",
-                            }}
-                          >
-                            {product.category}
-                          </span>
-                          <span
-                            className="wishlist-item-price"
-                            style={{
-                              display: "block",
-                              fontWeight: "600",
                               fontSize: "0.9rem",
+                              fontWeight: "600",
                               color: "#111",
+                              marginBottom: "8px",
                             }}
                           >
                             ${product.price ? product.price.toFixed(2) : "0.00"}
                           </span>
 
                           <div
-                            className="wishlist-item-actions"
                             style={{
                               display: "flex",
                               alignItems: "center",
-                              gap: "10px",
-                              marginTop: "8px",
+                              justifyContent: "space-between",
                             }}
                           >
+                            {/* Botón para mover al carrito */}
                             <motion.button
                               whileHover={{ scale: 1.03 }}
-                              whileTap={{ scale: 0.97 }}
-                              className="btn btn-primary btn-sm btn-move-cart"
+                              whileTap={{ scale: 0.95 }}
                               onClick={() => onMoveToCart(product)}
+                              className="btn btn-primary"
                               style={{
                                 display: "inline-flex",
                                 alignItems: "center",
@@ -299,16 +350,18 @@ export default function WishlistDrawer({
                                 padding: "6px 14px",
                                 fontSize: "0.8rem",
                                 borderRadius: "9999px",
+                                border: "none",
+                                cursor: "pointer",
                               }}
                             >
-                              <ShoppingCart size={12} />
-                              Añadir
+                              <ShoppingCart size={13} />
+                              <span>Añadir</span>
                             </motion.button>
 
+                            {/* Botón de eliminar */}
                             <motion.button
                               whileHover={{ scale: 1.15, color: "#ff4b4b" }}
                               whileTap={{ scale: 0.85 }}
-                              className="btn-delete-item"
                               onClick={() => onRemove(product.id)}
                               aria-label="Remove item"
                               style={{
@@ -327,13 +380,14 @@ export default function WishlistDrawer({
                         </div>
                       </motion.div>
                     ))}
-                  </AnimatePresence>
-                </div>
-              )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </motion.aside>
         </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 }

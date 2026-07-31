@@ -1,7 +1,6 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Heart, ShoppingBag, Check } from "lucide-react";
-// Opcional: Si integraste los estilos del modal en styles.css, puedes omitir la siguiente línea
 import "./QuickView.css";
 
 export default function ProductQuickView({
@@ -15,8 +14,12 @@ export default function ProductQuickView({
 }) {
   if (!product) return null;
 
-  const isAdded = cart.some((item) => item?.product?.id === product.id);
-  const isFavorite = wishlist.some((item) => item.id === product.id);
+  const isAdded = cart.some(
+    (item) => (item?.id || item?.product?.id) === product.id,
+  );
+  const isFavorite = wishlist.some(
+    (item) => (item?.id || item?.product?.id) === product.id,
+  );
 
   return (
     <AnimatePresence>
@@ -41,31 +44,37 @@ export default function ProductQuickView({
               <X size={18} />
             </button>
 
-            {/* 👇 AQUÍ dentro de <motion.div className="modal-container"> 
-                agregas las dos columnas con la info de tu producto */}
+            {/* Layout de 2 columnas original */}
             <div className="modal-body-grid">
-              {/* Columna 1: Imagen del Producto */}
+              {/* Columna Izquierda: Imagen */}
               <div className="modal-image-section">
                 <img src={product.image} alt={product.name} />
               </div>
 
-              {/* Columna 2: Detalles y Acciones */}
+              {/* Columna Derecha: Detalles */}
               <div className="modal-info-section">
-                <h2>{product.name}</h2>
-                <p className="price">${product.price}</p>
-                <p className="description">{product.description}</p>
+                <div>
+                  <h2 className="modal-title">{product.name}</h2>
+                  <p className="modal-price">${product.price}</p>
+                  <p className="modal-description">{product.description}</p>
+                </div>
 
+                {/* Botones de Acción */}
                 <div className="actions-wrapper">
-                  <button
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
                     className={`btn-add-cart ${isAdded ? "added" : ""}`}
                     onClick={() => onAddToCart(product)}
                     disabled={isAdded}
                   >
                     {isAdded ? <Check size={18} /> : <ShoppingBag size={18} />}
-                    {isAdded ? "¡Añadido al Carrito!" : "Añadir al Carrito"}
-                  </button>
+                    <span>
+                      {isAdded ? "¡Añadido al Carrito!" : "Añadir al Carrito"}
+                    </span>
+                  </motion.button>
 
-                  <button
+                  <motion.button
+                    whileTap={{ scale: 0.85 }}
                     className={`btn-wishlist ${isFavorite ? "active" : ""}`}
                     onClick={() => onToggleWishlist(product)}
                   >
@@ -73,13 +82,10 @@ export default function ProductQuickView({
                       size={18}
                       fill={isFavorite ? "currentColor" : "none"}
                     />
-                  </button>
+                  </motion.button>
                 </div>
               </div>
             </div>
-
-            {/* Resto de la estructura de 2 columnas (.modal-body-grid, etc.) */}
-            {/* ... */}
           </motion.div>
         </motion.div>
       )}
