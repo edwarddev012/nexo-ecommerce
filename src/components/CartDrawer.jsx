@@ -112,6 +112,7 @@ export default function CartDrawer({
       document.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "";
       document.body.style.position = "";
+      document.body.style.width = "";
     };
   }, [isOpen, onClose, isMounted]);
 
