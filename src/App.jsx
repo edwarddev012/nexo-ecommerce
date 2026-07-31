@@ -182,6 +182,18 @@ function AppContent() {
   }, []);
 
   useEffect(() => {
+    if (isCartOpen || isWishlistOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isCartOpen, isWishlistOpen]);
+
+  useEffect(() => {
     if (!isDataLoaded.current) return;
 
     const timer = setTimeout(async () => {
