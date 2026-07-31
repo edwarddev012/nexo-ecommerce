@@ -214,6 +214,10 @@ export default function WishlistDrawer({
               style={{
                 flex: 1,
                 overflowY: "auto",
+                overscrollBehavior:
+                  "contain" /* <--- IMPIDE que el scroll traspase al fondo */,
+                WebkitOverflowScrolling:
+                  "touch" /* <--- Scroll suave y nativo en iOS */,
                 padding: "20px",
                 position: "relative",
               }}

@@ -104,11 +104,14 @@ export default function CartDrawer({
     document.addEventListener("keydown", handleKeyDown);
 
     document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.width = "100%";
 
     return () => {
       document.removeEventListener("mousedown", handleOutsideClick, true);
       document.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "";
+      document.body.style.position = "";
     };
   }, [isOpen, onClose, isMounted]);
 
@@ -240,6 +243,10 @@ export default function CartDrawer({
               style={{
                 flex: 1,
                 overflowY: "auto",
+                overscrollBehavior:
+                  "contain" /* <--- IMPIDE que el scroll traspase al fondo */,
+                WebkitOverflowScrolling:
+                  "touch" /* <--- Scroll suave y nativo en iOS */,
                 padding: "20px",
                 position: "relative",
               }}

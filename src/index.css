@@ -3136,3 +3136,10 @@ img {
     flex-shrink: 0;
   }
 }
+
+/* Aplica esto a la lista/contenedor de productos dentro del Drawer */
+.drawer-products-list {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* Scroll suave en iOS */
+  overscroll-behavior: contain;      /* IMPEDIR que el scroll pase al body */
+}
