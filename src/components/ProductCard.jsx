@@ -1,10 +1,7 @@
-// src/components/ProductCard.jsx
-import { useState } from "react";
+import { useState, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingBag, Heart, Check } from "lucide-react";
-import { useToast } from "../context/ToastContext";
 import { getProductImage } from "../utils/imageHelper";
-import { memo } from "react";
 
 function ProductCard({
   product,
@@ -14,7 +11,6 @@ function ProductCard({
   onAddToCart,
   onToggleWishlist,
 }) {
-  const { showToast } = useToast();
   const isAdded = cart.some((item) => item?.product?.id === product.id);
   const [isFlying, setIsFlying] = useState(false);
 
@@ -27,27 +23,19 @@ function ProductCard({
   // Si la imagen falla, usamos un fallback de Picsum
   const finalImageUrl = imgError ? "/images/placeholder.jpg" : imageUrl;
 
-  const handleAddToCart = (e) => {
+  const handleAddToCart = () => {
     if (!isAdded) {
-      setIsFlying(true);
-      if (window.triggerCartBounce) {
-        window.triggerCartBounce();
-      }
-      onAddToCart(product, 1);
-      showToast(
-        `¡Excelente elección! "${product.name}" se sumó al carrito.`,
-        "success",
-      );
+      onAddToCart(product, 1, () => {
+        setIsFlying(true);
+        if (window.triggerCartBounce) {
+          window.triggerCartBounce();
+        }
+      });
     }
   };
 
   const handleWishlistToggle = () => {
     onToggleWishlist(product.id);
-    if (!isWishlisted) {
-      showToast(`Añadido a tu lista de deseos ❤️`, "info");
-    } else {
-      showToast(`Eliminado de tu lista de deseos`, "info");
-    }
   };
 
   return (
@@ -69,7 +57,7 @@ function ProductCard({
       <AnimatePresence>
         {isFlying && (
           <motion.img
-            src={finalImageUrl} // 👈 USAMOS LA IMAGEN GENERADA
+            src={finalImageUrl}
             alt="flying-item"
             style={{
               position: "absolute",
@@ -105,7 +93,7 @@ function ProductCard({
         style={{ cursor: "pointer" }}
       >
         <img
-          src={finalImageUrl} // 👈 USAMOS LA IMAGEN GENERADA
+          src={finalImageUrl}
           alt={product.name}
           style={{
             width: "100%",
@@ -113,11 +101,10 @@ function ProductCard({
             objectFit: "cover",
             borderRadius: "12px",
           }}
-          onError={() => setImgError(true)} // 👈 MANEJAMOS ERRORES
+          onError={() => setImgError(true)}
         />
       </div>
 
-      {/* ... El resto de tu código se mantiene igual ... */}
       <div
         className="product-card-info"
         style={{

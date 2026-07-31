@@ -24,8 +24,7 @@ const AuthModal = lazy(() => import("./components/AuthModal"));
 
 import products from "./data/products";
 import { motion, AnimatePresence } from "framer-motion";
-import { ToastNotification } from "./components/ToastNotification";
-import { ToastProvider } from "./context/ToastContext";
+import { ToastProvider, useToast } from "./context/ToastContext";
 import { SlidersHorizontal } from "lucide-react";
 import { supabase } from "./lib/supabaseClient";
 
@@ -44,7 +43,7 @@ const TRADUCCIONES_CATEGORIAS = {
   accesories: "Accesorios",
 };
 
-export default function App() {
+function AppContent() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortOption, setSortOption] = useState("featured");
@@ -52,19 +51,14 @@ export default function App() {
   const [cartTrigger, setCartTrigger] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
-  // --- ESTADOS DE PAGINACIÓN ---
   const [currentPage, setCurrentPage] = useState(1);
   const productsPerPage = 9;
 
-  // --- ESTADOS DE AUTENTICACIÓN Y MODALES ---
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [user, setUser] = useState(null);
 
-  const [toast, setToast] = useState({
-    isOpen: false,
-    message: "",
-    type: "success",
-  });
+  // Hook del contexto global de Toasts
+  const { showToast } = useToast();
 
   const [cart, setCart] = useState(() => {
     try {
@@ -240,19 +234,6 @@ export default function App() {
     saveWishlist();
   }, [wishlist, user?.id]);
 
-  const showToast = (message, type = "success") => {
-    setToast({ isOpen: true, message, type });
-  };
-
-  useEffect(() => {
-    if (toast.isOpen) {
-      const timer = setTimeout(() => {
-        setToast((prev) => ({ ...prev, isOpen: false }));
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [toast.isOpen]);
-
   const categories = useMemo(() => {
     const cats = new Set(products.map((p) => p.category));
     const listaOriginal = ["All", ...Array.from(cats)];
@@ -304,21 +285,57 @@ export default function App() {
     return filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
   }, [filteredProducts, currentPage, productsPerPage]);
 
-  const handleAddToCart = (product, quantity = 1) => {
-    if (!product) return;
-    setCartTrigger((prev) => prev + 1);
-    setCart((prevCart) => {
-      const existing = prevCart.find(
-        (item) => item?.product?.id === product.id,
-      );
-      if (existing) {
-        return prevCart.map((item) =>
-          item?.product?.id === product.id
-            ? { ...item, quantity: item.quantity + quantity }
-            : item,
+  const checkAuthAndExecute = async (actionCallback) => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session) {
+      setIsAuthOpen(true);
+      return false;
+    }
+
+    actionCallback();
+    return true;
+  };
+
+  const handleAddToCart = async (product, quantity = 1, onSuccess) => {
+    if (!product) return false;
+
+    return await checkAuthAndExecute(() => {
+      setCartTrigger((prev) => prev + 1);
+      setCart((prevCart) => {
+        const existing = prevCart.find(
+          (item) => item?.product?.id === product.id,
         );
+        if (existing) {
+          return prevCart.map((item) =>
+            item?.product?.id === product.id
+              ? { ...item, quantity: item.quantity + quantity }
+              : item,
+          );
+        }
+        return [...prevCart, { product, quantity }];
+      });
+
+      showToast("Producto añadido al carrito", "success");
+      if (onSuccess && typeof onSuccess === "function") {
+        onSuccess();
       }
-      return [...prevCart, { product, quantity }];
+    });
+  };
+
+  const handleToggleWishlist = async (productId) => {
+    return await checkAuthAndExecute(() => {
+      setWishlist((prevWishlist) => {
+        const isAlreadyWishlisted = prevWishlist.includes(productId);
+        if (isAlreadyWishlisted) {
+          showToast("Eliminado de la lista de deseos", "info");
+          return prevWishlist.filter((id) => id !== productId);
+        }
+        showToast("¡Añadido a tus favoritos!", "success");
+        return [...prevWishlist, productId];
+      });
     });
   };
 
@@ -338,15 +355,6 @@ export default function App() {
     setCart((prevCart) =>
       prevCart.filter((item) => item?.product?.id !== productId),
     );
-  };
-
-  const handleToggleWishlist = (productId) => {
-    setWishlist((prevWishlist) => {
-      if (prevWishlist.includes(productId)) {
-        return prevWishlist.filter((id) => id !== productId);
-      }
-      return [...prevWishlist, productId];
-    });
   };
 
   const handleMoveToCart = (product) => {
@@ -403,251 +411,243 @@ export default function App() {
   }, [wishlist]);
 
   return (
-    <ToastProvider>
-      <div className="app-layout">
-        <Header
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          cartCount={cartCount}
-          wishlistCount={wishlist.length}
-          user={user}
-          onLoginToggle={handleLoginToggle}
-          products={products}
-          onProductClick={setSelectedProduct}
-          cartItems={cartItemsFormatted}
-          onCartClick={() => {
-            setIsCartOpen(!isCartOpen);
-            setIsWishlistOpen(false);
-          }}
-          onWishlistClick={() => {
-            setIsWishlistOpen(!isWishlistOpen);
-            setIsCartOpen(false);
-          }}
-          onLogoClick={handleLogoClick}
-        />
+    <div className="app-layout">
+      <Header
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        cartCount={cartCount}
+        wishlistCount={wishlist.length}
+        user={user}
+        onLoginToggle={handleLoginToggle}
+        products={products}
+        onProductClick={setSelectedProduct}
+        cartItems={cartItemsFormatted}
+        onCartClick={() => {
+          setIsCartOpen(!isCartOpen);
+          setIsWishlistOpen(false);
+        }}
+        onWishlistClick={() => {
+          setIsWishlistOpen(!isWishlistOpen);
+          setIsCartOpen(false);
+        }}
+        onLogoClick={handleLogoClick}
+      />
 
-        {/* DEFINICIÓN DE RUTAS DIRECTAS (SIN DECLARACIONES INTERNAS) */}
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <main className="main-content container anim-fade-in">
-                <section className="catalog-hero">
-                  <div className="hero-content">
-                    <h1>Tecnología que te entiende y te acompaña.</h1>
-                    <p style={{ marginTop: "24px", marginBottom: "32px" }}>
-                      Equipamiento premium optimizado para la cultura urbana.
+      {/* DEFINICIÓN DE RUTAS DIRECTAS */}
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <main className="main-content container anim-fade-in">
+              <section className="catalog-hero">
+                <div className="hero-content">
+                  <h1>Tecnología que te entiende y te acompaña.</h1>
+                  <p style={{ marginTop: "24px", marginBottom: "32px" }}>
+                    Equipamiento premium optimizado para la cultura urbana.
+                  </p>
+                </div>
+              </section>
+
+              <section id="catalog-explore" className="catalog-section">
+                <div className="catalog-section-header">
+                  <div>
+                    <h2>CATÁLOGO GLOBAL</h2>
+                    <p className="results-count">
+                      Mostrando {filteredProducts.length} lanzamientos indexados
                     </p>
                   </div>
-                </section>
-
-                <section id="catalog-explore" className="catalog-section">
-                  <div className="catalog-section-header">
-                    <div>
-                      <h2>CATÁLOGO GLOBAL</h2>
-                      <p className="results-count">
-                        Mostrando {filteredProducts.length} lanzamientos
-                        indexados
-                      </p>
-                    </div>
-                    <div>
-                      <button
-                        className={`btn-toggle-filters ${showFilters ? "active" : ""}`}
-                        onClick={() => setShowFilters(!showFilters)}
-                      >
-                        <SlidersHorizontal size={14} />
-                        <span>
-                          {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
-                        </span>
-                      </button>
-                    </div>
+                  <div>
+                    <button
+                      className={`btn-toggle-filters ${showFilters ? "active" : ""}`}
+                      onClick={() => setShowFilters(!showFilters)}
+                    >
+                      <SlidersHorizontal size={14} />
+                      <span>
+                        {showFilters ? "Ocultar Filtros" : "Mostrar Filtros"}
+                      </span>
+                    </button>
                   </div>
+                </div>
 
-                  {/* Contenedor del Catálogo: Removimos el display:flex inline para dejar que el CSS o las media queries lo manejen */}
-                  <div className="catalog-layout">
-                    <AnimatePresence initial={false}>
-                      {showFilters && (
-                        <motion.aside
-                          className="filters-sidebar"
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: "auto" }}
-                          exit={{ opacity: 0, height: 0 }}
-                          transition={{
-                            type: "spring",
-                            stiffness: 300,
-                            damping: 30,
-                          }}
-                        >
-                          <Filters
-                            selectedCategory={selectedCategory}
-                            setSelectedCategory={setSelectedCategory}
-                            sortOption={sortOption}
-                            setSortOption={setSortOption}
-                            priceRange={priceRange}
-                            setPriceRange={setPriceRange}
-                            categories={categories}
-                            maxProductPrice={maxProductPrice}
-                            onReset={handleResetFilters}
-                          />
-                        </motion.aside>
-                      )}
+                <div className="catalog-layout">
+                  <AnimatePresence initial={false}>
+                    {showFilters && (
+                      <motion.aside
+                        className="filters-sidebar"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 300,
+                          damping: 30,
+                        }}
+                      >
+                        <Filters
+                          selectedCategory={selectedCategory}
+                          setSelectedCategory={setSelectedCategory}
+                          sortOption={sortOption}
+                          setSortOption={setSortOption}
+                          priceRange={priceRange}
+                          setPriceRange={setPriceRange}
+                          categories={categories}
+                          maxProductPrice={maxProductPrice}
+                          onReset={handleResetFilters}
+                        />
+                      </motion.aside>
+                    )}
+                  </AnimatePresence>
+
+                  <motion.div
+                    className="products-grid-container"
+                    layout
+                    style={{ width: "100%" }}
+                  >
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={currentPage}
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -15 }}
+                        transition={{ duration: 0.35, ease: "easeInOut" }}
+                      >
+                        <ProductGrid
+                          products={paginatedProducts}
+                          isLoading={isLoading}
+                          wishlist={wishlist}
+                          cart={cart}
+                          searchQuery={searchTerm}
+                          onProductClick={setSelectedProduct}
+                          onAddToCart={handleAddToCart}
+                          onToggleWishlist={handleToggleWishlist}
+                          onResetFilters={handleResetFilters}
+                        />
+                      </motion.div>
                     </AnimatePresence>
 
-                    <motion.div
-                      className="products-grid-container"
-                      layout
-                      style={{ width: "100%" }}
-                    >
-                      <AnimatePresence mode="wait">
-                        <motion.div
-                          key={currentPage}
-                          initial={{ opacity: 0, y: 15 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -15 }}
-                          transition={{ duration: 0.35, ease: "easeInOut" }}
-                        >
-                          <ProductGrid
-                            products={paginatedProducts}
-                            isLoading={isLoading}
-                            wishlist={wishlist}
-                            cart={cart}
-                            searchQuery={searchTerm}
-                            onProductClick={setSelectedProduct}
-                            onAddToCart={handleAddToCart}
-                            onToggleWishlist={handleToggleWishlist}
-                            onResetFilters={handleResetFilters}
-                          />
-                        </motion.div>
-                      </AnimatePresence>
-
-                      {totalPages > 1 && (
-                        <div
-                          className="pagination-controls"
+                    {totalPages > 1 && (
+                      <div
+                        className="pagination-controls"
+                        style={{
+                          marginTop: "40px",
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          gap: "16px",
+                        }}
+                      >
+                        <button
+                          className="btn-pagination"
+                          onClick={() => {
+                            window.scrollTo({ top: 400, behavior: "smooth" });
+                            setCurrentPage((prev) => Math.max(prev - 1, 1));
+                          }}
+                          disabled={currentPage === 1}
                           style={{
-                            marginTop: "40px",
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                            gap: "16px",
+                            opacity: currentPage === 1 ? 0.5 : 1,
+                            cursor:
+                              currentPage === 1 ? "not-allowed" : "pointer",
                           }}
                         >
-                          <button
-                            className="btn-pagination"
-                            onClick={() => {
-                              window.scrollTo({ top: 400, behavior: "smooth" });
-                              setCurrentPage((prev) => Math.max(prev - 1, 1));
-                            }}
-                            disabled={currentPage === 1}
-                            style={{
-                              opacity: currentPage === 1 ? 0.5 : 1,
-                              cursor:
-                                currentPage === 1 ? "not-allowed" : "pointer",
-                            }}
-                          >
-                            Anterior
-                          </button>
+                          Anterior
+                        </button>
 
-                          <span style={{ fontSize: "14px", fontWeight: "500" }}>
-                            Página {currentPage} de {totalPages}
-                          </span>
+                        <span style={{ fontSize: "14px", fontWeight: "500" }}>
+                          Página {currentPage} de {totalPages}
+                        </span>
 
-                          <button
-                            className="btn-pagination"
-                            onClick={() => {
-                              window.scrollTo({ top: 400, behavior: "smooth" });
-                              setCurrentPage((prev) =>
-                                Math.min(prev + 1, totalPages),
-                              );
-                            }}
-                            disabled={currentPage === totalPages}
-                            style={{
-                              opacity: currentPage === totalPages ? 0.5 : 1,
-                              cursor:
-                                currentPage === totalPages
-                                  ? "not-allowed"
-                                  : "pointer",
-                            }}
-                          >
-                            Siguiente
-                          </button>
-                        </div>
-                      )}
-                    </motion.div>
-                  </div>
-                </section>
-              </main>
-            }
-          />
-          <Route path="/comercio" element={<ComercioPage />} />
-          <Route path="/diario" element={<DiarioPage />} />
-        </Routes>
+                        <button
+                          className="btn-pagination"
+                          onClick={() => {
+                            window.scrollTo({ top: 400, behavior: "smooth" });
+                            setCurrentPage((prev) =>
+                              Math.min(prev + 1, totalPages),
+                            );
+                          }}
+                          disabled={currentPage === totalPages}
+                          style={{
+                            opacity: currentPage === totalPages ? 0.5 : 1,
+                            cursor:
+                              currentPage === totalPages
+                                ? "not-allowed"
+                                : "pointer",
+                          }}
+                        >
+                          Siguiente
+                        </button>
+                      </div>
+                    )}
+                  </motion.div>
+                </div>
+              </section>
+            </main>
+          }
+        />
+        <Route path="/comercio" element={<ComercioPage />} />
+        <Route path="/diario" element={<DiarioPage />} />
+      </Routes>
 
-        <Footer />
+      <Footer />
 
-        <Suspense fallback={null}>
-          <ProductQuickView
-            isOpen={selectedProduct !== null}
-            product={selectedProduct}
-            onClose={() => setSelectedProduct(null)}
-            onAddToCart={handleAddToCart}
-            cart={cart}
-            isFavorite={
-              selectedProduct ? wishlist.includes(selectedProduct.id) : false
-            }
-            onToggleWishlist={handleToggleWishlist}
-          />
+      <Suspense fallback={null}>
+        <ProductQuickView
+          isOpen={selectedProduct !== null}
+          product={selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+          onAddToCart={handleAddToCart}
+          cart={cart}
+          wishlist={wishlist}
+          onToggleWishlist={handleToggleWishlist}
+        />
 
-          <CartDrawer
-            isOpen={isCartOpen}
-            onClose={() => setIsCartOpen(false)}
-            cartItems={cartItemsFormatted}
-            onUpdateQuantity={handleUpdateQty}
-            onRemove={handleRemoveFromCart}
-            totalAmount={totalAmount}
-            onCheckout={() => {
-              setIsCartOpen(false);
-              setIsCheckoutOpen(true);
-            }}
-          />
+        <CartDrawer
+          isOpen={isCartOpen}
+          onClose={() => setIsCartOpen(false)}
+          cartItems={cartItemsFormatted}
+          onUpdateQuantity={handleUpdateQty}
+          onRemove={handleRemoveFromCart}
+          totalAmount={totalAmount}
+          onCheckout={() => {
+            setIsCartOpen(false);
+            setIsCheckoutOpen(true);
+          }}
+        />
 
-          <WishlistDrawer
-            isOpen={isWishlistOpen}
-            onClose={() => setIsWishlistOpen(false)}
-            wishlistItems={wishlistItems}
-            onRemove={handleToggleWishlist}
-            onMoveToCart={handleMoveToCart}
-          />
+        <WishlistDrawer
+          isOpen={isWishlistOpen}
+          onClose={() => setIsWishlistOpen(false)}
+          wishlistItems={wishlistItems}
+          onRemove={handleToggleWishlist}
+          onMoveToCart={handleMoveToCart}
+        />
 
-          <CheckoutModal
-            isOpen={isCheckoutOpen}
-            onClose={() => setIsCheckoutOpen(false)}
-            totalAmount={totalAmount}
-            onPaymentSuccess={() => {
-              setCart([]);
-              showToast("¡Pedido realizado con éxito!", "success");
-            }}
-          />
+        <CheckoutModal
+          isOpen={isCheckoutOpen}
+          onClose={() => setIsCheckoutOpen(false)}
+          totalAmount={totalAmount}
+          onPaymentSuccess={() => {
+            setCart([]);
+            showToast("¡Pedido realizado con éxito!", "success");
+          }}
+        />
 
-          <AuthModal
-            isOpen={isAuthOpen}
-            onClose={() => setIsAuthOpen(false)}
-            onAuthSuccess={(userData) => {
-              setUser(userData);
-              showToast(`¡Bienvenido de nuevo, ${userData.name}!`, "success");
-            }}
-          />
-        </Suspense>
+        <AuthModal
+          isOpen={isAuthOpen}
+          onClose={() => setIsAuthOpen(false)}
+          onAuthSuccess={(userData) => {
+            setUser(userData);
+            showToast(`¡Bienvenido de nuevo, ${userData.name}!`, "success");
+          }}
+        />
+      </Suspense>
+    </div>
+  );
+}
 
-        <AnimatePresence>
-          {toast.isOpen && (
-            <ToastNotification
-              message={toast.message}
-              type={toast.type}
-              onClose={() => setToast((prev) => ({ ...prev, isOpen: false }))}
-            />
-          )}
-        </AnimatePresence>
-      </div>
+export default function App() {
+  return (
+    <ToastProvider>
+      <AppContent />
     </ToastProvider>
   );
 }

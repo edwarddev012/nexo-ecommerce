@@ -21,6 +21,20 @@ export default function ProductQuickView({
     (item) => (item?.id || item?.product?.id) === product.id,
   );
 
+  const handleCartClick = async () => {
+    const isAuth = await onAddToCart(product);
+    if (isAuth === false) {
+      onClose();
+    }
+  };
+
+  const handleWishlistClick = async () => {
+    const isAuth = await onToggleWishlist(product.id);
+    if (isAuth === false) {
+      onClose();
+    }
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -64,7 +78,7 @@ export default function ProductQuickView({
                   <motion.button
                     whileTap={{ scale: 0.95 }}
                     className={`btn-add-cart ${isAdded ? "added" : ""}`}
-                    onClick={() => onAddToCart(product)}
+                    onClick={handleCartClick}
                     disabled={isAdded}
                   >
                     {isAdded ? <Check size={18} /> : <ShoppingBag size={18} />}
@@ -76,7 +90,7 @@ export default function ProductQuickView({
                   <motion.button
                     whileTap={{ scale: 0.85 }}
                     className={`btn-wishlist ${isFavorite ? "active" : ""}`}
-                    onClick={() => onToggleWishlist(product)}
+                    onClick={handleWishlistClick}
                   >
                     <Heart
                       size={18}

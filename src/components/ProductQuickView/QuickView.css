@@ -692,3 +692,11 @@
   background-color: #f1f5f9;
   color: #ef4444;
 }
+
+/* En QuickView.css / estilos globales */
+.modal-price,
+.cart-item-price,
+.wishlist-item-price {
+  color: #10b981 !important; /* Verde dólar sólido */
+  font-weight: 700;
+}
